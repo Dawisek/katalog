@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Jedilnik">
+<title>Tedenski Jedilnik</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:linear-gradient(160deg,#1a0a2e 0%,#2d1b4e 50%,#0a1a2e 100%);font-family:Georgia,serif;color:#f0ede8;min-height:100vh;padding:18px 14px 40px}
+.container{max-width:640px;margin:0 auto}
+.header{text-align:center;margin-bottom:20px}
+.header .sub{font-size:11px;letter-spacing:4px;color:#ce93d8;text-transform:uppercase;margin-bottom:5px}
+.header h1{font-size:24px;font-weight:bold;color:#f3e5f5}
+.header .note{font-size:12px;color:#7b5e8a;margin-top:4px}
+.day-tabs{display:flex;gap:5px;margin-bottom:14px;overflow-x:auto;padding-bottom:4px}
+.day-btn{flex:0 0 auto;padding:6px 11px;border-radius:16px;border:none;cursor:pointer;font-size:11px;font-family:Georgia,serif;background:rgba(255,255,255,0.08);color:#9e7ab5;transition:all 0.18s}
+.day-btn.active{background:#7b1fa2;color:#fff;font-weight:bold}
+.stats{display:flex;gap:6px;margin-bottom:14px;background:rgba(255,255,255,0.05);border-radius:12px;padding:10px 12px}
+.stat{flex:1;text-align:center}
+.stat .val{font-size:14px;font-weight:bold}
+.stat .lbl{font-size:9px;color:#5d4a6a;margin-top:1px}
+.ocard{background:rgba(255,255,255,0.06);border-radius:16px;margin-bottom:10px;overflow:hidden}
+.ocard-head{padding:13px 15px;cursor:pointer;user-select:none}
+.ocard-row1{display:flex;justify-content:space-between;align-items:flex-start}
+.ocard-label{font-size:11px;letter-spacing:1px;margin-bottom:2px}
+.ocard-preview{font-size:12px;color:#d1b8e0}
+.ocard-kcal{font-size:14px;font-weight:bold;color:#f48fb1}
+.ocard-prot{font-size:11px;margin-top:2px}
+.macros{margin-top:7px;display:flex;gap:5px;flex-wrap:wrap;align-items:center}
+.mc{font-size:11px;background:rgba(255,255,255,0.07);border-radius:8px;padding:2px 7px}
+.toggle-hint{font-size:10px;color:#4a3a5a;margin-left:4px}
+.ocard-body{background:rgba(0,0,0,0.2);padding:0 15px 13px;display:none}
+.ocard-body.open{display:block}
+.divider{border-top:1px solid rgba(255,255,255,0.06);padding-top:10px}
+.srow{display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:11px}
+.srow:last-child{border-bottom:none}
+.sname{color:#b39ddb}
+.sgrams{color:#4a3a5a;margin-left:5px}
+.snums{color:#5d4a6a;text-align:right}
+.sp{color:#a5d6a7}
+.svl{color:#80cbc4}
+.sk{color:#f48fb1}
+.note-box{border-radius:12px;padding:12px 14px;margin-top:8px;font-size:12px;line-height:1.8}
+.note-purple{background:rgba(156,39,176,0.08);border:1px solid rgba(156,39,176,0.2);color:#e1bee7}
+.note-red{background:rgba(239,83,80,0.07);border:1px solid rgba(239,83,80,0.18);color:#ef9a9a}
+.note-teal{background:rgba(0,188,212,0.07);border:1px solid rgba(0,188,212,0.18);color:#80deea}
+.note-lbl{font-size:11px;letter-spacing:1px;margin-bottom:6px}
+.footer{text-align:center;margin-top:14px;font-size:10px;color:#1c0a2e}
+.c-green{color:#a5d6a7}.c-yellow{color:#fff176}.c-red{color:#ef9a9a}.c-purple{color:#ce93d8}.c-pink{color:#f48fb1}.c-teal{color:#80cbc4}
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="header">
+    <div class="sub">4 obroki · 1500 kcal · Brez glutena</div>
+    <h1>Tedenski jedilnik</h1>
+    <div class="note">120g beljakovin · 100g OH · 30g vlaknin · Brez suhih mesnin</div>
+  </div>
+  <div class="day-tabs" id="dayTabs"></div>
+  <div class="stats" id="stats"></div>
+  <div id="obroki"></div>
+  <div class="note-box note-teal" style="margin-top:4px">
+    <div class="note-lbl" style="color:#80cbc4">💧 DNEVNO</div>
+    Voda: vsaj 2 litra · Psyllium prah (1 čajna žlička v vodi) – opcijsko za vlaknine · Zeleni čaj ali voda z limono zjutraj
+  </div>
+  <div class="note-box note-red" style="margin-top:8px">
+    <div class="note-lbl" style="color:#ef9a9a">🚫 IZOGIBAJ SE</div>
+    Suhe mesnine · Paradižnik · Starani siri · Vloženine · Gluten (pšenica, ječmen, rž) · Predelana hrana
+  </div>
+  <div class="note-box note-purple" style="margin-top:8px">
+    <div class="note-lbl" style="color:#ce93d8">✅ DOVOLJENI SIRI</div>
+    Sveža mozzarella · Ricotta · Kefir · Grški jogurt 0% – vsi brez staranja
+  </div>
+  <div class="footer">Tapni obrok za gramature · Brez glutena · 30g vlaknin/dan</div>
+</div>
+
+<script>
+const DAYS=[
+  {day:"Ponedeljek",dp:114,doh:139,dm:53,dvl:26,dk:1453,
+   obroki:[
+    {cas:"7:00–8:00",tp:22.3,toh:46.3,tm:5.6,tvl:9.1,tk:326,s:[{i:"Ovseni kosmiči b/g",g:40,p:5.2,oh:23.2,m:2.8,vl:4.0,k:148},{i:"Grški jogurt 0%",g:150,p:15.0,oh:5.7,m:0.0,vl:0.0,k:82},{i:"Borovnice",g:100,p:0.7,oh:14.0,m:0.3,vl:2.4,k:57},{i:"Chia semena",g:8,p:1.4,oh:3.4,m:2.5,vl:2.7,k:39}]},
+    {cas:"12:00–13:00",tp:46.7,toh:36.1,tm:15.2,tvl:7.3,tk:464,s:[{i:"Piščančje prsi",g:120,p:37.2,oh:0.0,m:4.3,vl:0.0,k:198},{i:"Kvinoja kuhana",g:120,p:5.3,oh:25.6,m:2.3,vl:3.4,k:144},{i:"Brokoli",g:150,p:4.2,oh:10.5,m:0.6,vl:3.9,k:51},{i:"Oljčno olje",g:8,p:0.0,oh:0.0,m:8.0,vl:0.0,k:71}]},
+    {cas:"15:30–16:00",tp:20.6,toh:25.5,tm:10.4,tvl:4.1,tk:264,s:[{i:"Skuta nizkomastna",g:150,p:18.0,oh:5.2,m:0.3,vl:0.0,k:98},{i:"Jabolko",g:130,p:0.4,oh:18.2,m:0.3,vl:3.1,k:68},{i:"Orehi",g:15,p:2.2,oh:2.1,m:9.8,vl:1.0,k:98}]},
+    {cas:"19:00–20:00",tp:24.4,toh:30.7,tm:21.5,tvl:5.4,tk:399,s:[{i:"Losos svež",g:100,p:20.0,oh:0.0,m:13.0,vl:0.0,k:190},{i:"Sladki krompir",g:130,p:2.6,oh:26.0,m:0.1,vl:3.9,k:112},{i:"Bučke",g:150,p:1.8,oh:4.7,m:0.4,vl:1.5,k:26},{i:"Oljčno olje",g:8,p:0.0,oh:0.0,m:8.0,vl:0.0,k:71}]}
+   ]},
+  {day:"Torek",dp:131,doh:116,dm:50,dvl:32,dk:1404,
+   obroki:[
+    {cas:"7:00–8:00",tp:33.2,toh:20.8,tm:17.3,tvl:8.7,tk:363,s:[{i:"Jajca (2×60g)",g:120,p:15.6,oh:0.8,m:13.2,vl:0.0,k:186},{i:"Grški jogurt 0%",g:150,p:15.0,oh:5.7,m:0.0,vl:0.0,k:82},{i:"Maline",g:100,p:1.2,oh:12.0,m:0.7,vl:6.5,k:52},{i:"Lanena semena",g:8,p:1.4,oh:2.3,m:3.4,vl:2.2,k:43}]},
+    {cas:"12:00–13:00",tp:39.7,toh:38.5,tm:11.1,tvl:6.0,tk:413,s:[{i:"Tuna v last. soku",g:130,p:33.8,oh:0.0,m:1.3,vl:0.0,k:151},{i:"Rjavi riž kuhan",g:120,p:3.1,oh:27.6,m:1.1,vl:2.2,k:133},{i:"Paprika",g:150,p:1.5,oh:9.0,m:0.4,vl:3.0,k:46},{i:"Rukola",g:50,p:1.3,oh:1.9,m:0.3,vl:0.8,k:12},{i:"Oljčno olje",g:8,p:0.0,oh:0.0,m:8.0,vl:0.0,k:71}]},
+    {cas:"15:30–16:00",tp:22.6,toh:26.8,tm:8.7,tvl:6.6,tk:264,s:[{i:"Grški jogurt 0%",g:180,p:18.0,oh:6.8,m:0.0,vl:0.0,k:99},{i:"Borovnice",g:100,p:0.7,oh:14.0,m:0.3,vl:2.4,k:57},{i:"Chia semena",g:8,p:1.4,oh:3.4,m:2.5,vl:2.7,k:39},{i:"Mandlji",g:12,p:2.5,oh:2.6,m:5.9,vl:1.5,k:69}]},
+    {cas:"19:00–20:00",tp:35.9,toh:29.6,tm:12.5,tvl:10.8,tk:364,s:[{i:"Orada file",g:130,p:26.0,oh:0.0,m:3.9,vl:0.0,k:136},{i:"Leča kuhana",g:100,p:9.0,oh:20.0,m:0.4,vl:8.0,k:116},{i:"Korenje",g:100,p:0.9,oh:9.6,m:0.2,vl:2.8,k:41},{i:"Oljčno olje",g:8,p:0.0,oh:0.0,m:8.0,vl:0.0,k:71}]}
+   ]},
+  {day:"Sreda",dp:108,doh:145,dm:61,dvl:30,dk:1522,
+   obroki:[
+    {cas:"7:00–8:00",tp:21.6,toh:53.3,tm:5.7,tvl:11.4,tk:351,s:[{i:"Ovseni kosmiči b/g",g:40,p:5.2,oh:23.2,m:2.8,vl:4.0,k:148},{i:"Skuta nizkomastna",g:120,p:14.4,oh:4.2,m:0.2,vl:0.0,k:78},{i:"Hruška",g:150,p:0.6,oh:22.5,m:0.2,vl:4.7,k:86},{i:"Chia semena",g:8,p:1.4,oh:3.4,m:2.5,vl:2.7,k:39}]},
+    {cas:"12:00–13:00",tp:40.1,toh:39.4,tm:20.0,tvl:8.3,tk:475,s:[{i:"Piščančje bedre b/k",g:110,p:27.5,oh:0.0,m:8.8,vl:0.0,k:187},{i:"Kvinoja kuhana",g:120,p:5.3,oh:25.6,m:2.3,vl:3.4,k:144},{i:"Brokoli",g:150,p:4.2,oh:10.5,m:0.6,vl:3.9,k:51},{i:"Gobe",g:100,p:3.1,oh:3.3,m:0.3,vl:1.0,k:22},{i:"Oljčno olje",g:8,p:0.0,oh:0.0,m:8.0,vl:0.0,k:71}]},
+    {cas:"15:30–16:00",tp:17.8,toh:20.7,tm:21.3,tvl:3.9,tk:332,s:[{i:"Jajca trdo kuhana (2×)",g:120,p:15.6,oh:0.8,m:13.2,vl:0.0,k:186},{i:"Jabolko",g:130,p:0.4,oh:18.2,m:0.3,vl:3.1,k:68},{i:"Orehi",g:12,p:1.8,oh:1.7,m:7.8,vl:0.8,k:78}]},
+    {cas:"19:00–20:00",tp:28.3,toh:32.0,tm:13.6,tvl:5.9,tk:364,s:[{i:"Brancin file",g:130,p:24.7,oh:0.0,m:5.2,vl:0.0,k:150},{i:"Sladki krompir",g:130,p:2.6,oh:26.0,m:0.1,vl:3.9,k:112},{i:"Paprika",g:100,p:1.0,oh:6.0,m:0.3,vl:2.0,k:31},{i:"Oljčno olje",g:8,p:0.0,oh:0.0,m:8.0,vl:0.0,k:71}]}
+   ]},
+  {day:"Četrtek",dp:140,doh:120,dm:52,dvl:29,dk:1484,
+   obroki:[
+    {cas:"7:00–8:00",tp:33.2,toh:20.8,tm:17.3,tvl:8.7,tk:363,s:[{i:"Jajca (2×60g)",g:120,p:15.6,oh:0.8,m:13.2,vl:0.0,k:186},{i:"Grški jogurt 0%",g:150,p:15.0,oh:5.7,m:0.0,vl:0.0,k:82},{i:"Maline",g:100,p:1.2,oh:12.0,m:0.7,vl:6.5,k:52},{i:"Lanena semena",g:8,p:1.4,oh:2.3,m:3.4,vl:2.2,k:43}]},
+    {cas:"12:00–13:00",tp:46.0,toh:48.6,tm:11.1,tvl:10.4,tk:470,s:[{i:"Tuna v last. soku",g:130,p:33.8,oh:0.0,m:1.3,vl:0.0,k:151},{i:"Rjavi riž kuhan",g:120,p:3.1,oh:27.6,m:1.1,vl:2.2,k:133},{i:"Leča kuhana",g:70,p:6.3,oh:14.0,m:0.3,vl:5.6,k:81},{i:"Brokoli",g:100,p:2.8,oh:7.0,m:0.4,vl:2.6,k:34},{i:"Oljčno olje",g:8,p:0.0,oh:0.0,m:8.0,vl:0.0,k:71}]},
+    {cas:"15:30–16:00",tp:21.9,toh:24.3,tm:10.9,tvl:5.9,tk:272,s:[{i:"Skuta nizkomastna",g:150,p:18.0,oh:5.2,m:0.3,vl:0.0,k:98},{i:"Borovnice",g:100,p:0.7,oh:14.0,m:0.3,vl:2.4,k:57},{i:"Chia semena",g:8,p:1.4,oh:3.4,m:2.5,vl:2.7,k:39},{i:"Orehi",g:12,p:1.8,oh:1.7,m:7.8,vl:0.8,k:78}]},
+    {cas:"19:00–20:00",tp:38.5,toh:26.8,tm:12.5,tvl:4.4,tk:379,s:[{i:"Piščančje prsi",g:110,p:34.1,oh:0.0,m:4.0,vl:0.0,k:182},{i:"Krompir kuhan",g:130,p:2.6,oh:22.1,m:0.1,vl:2.9,k:100},{i:"Bučke",g:150,p:1.8,oh:4.7,m:0.4,vl:1.5,k:26},{i:"Oljčno olje",g:8,p:0.0,oh:0.0,m:8.0,vl:0.0,k:71}]}
+   ]},
+  {day:"Petek",dp:110,doh:141,dm:64,dvl:33,dk:1539,
+   obroki:[
+    {cas:"7:00–8:00",tp:22.2,toh:43.5,tm:5.5,tvl:8.6,tk:315,s:[{i:"Ovseni kosmiči b/g",g:40,p:5.2,oh:23.2,m:2.8,vl:4.0,k:148},{i:"Grški jogurt 0%",g:150,p:15.0,oh:5.7,m:0.0,vl:0.0,k:82},{i:"Borovnice",g:80,p:0.6,oh:11.2,m:0.2,vl:1.9,k:46},{i:"Chia semena",g:8,p:1.4,oh:3.4,m:2.5,vl:2.7,k:39}]},
+    {cas:"12:00–13:00",tp:29.8,toh:37.4,tm:25.2,tvl:7.2,tk:480,s:[{i:"Losos svež",g:110,p:22.0,oh:0.0,m:14.3,vl:0.0,k:209},{i:"Kvinoja kuhana",g:120,p:5.3,oh:25.6,m:2.3,vl:3.4,k:144},{i:"Rukola",g:60,p:1.6,oh:2.2,m:0.4,vl:1.0,k:15},{i:"Korenje",g:100,p:0.9,oh:9.6,m:0.2,vl:2.8,k:41},{i:"Oljčno olje",g:8,p:0.0,oh:0.0,m:8.0,vl:0.0,k:71}]},
+    {cas:"15:30–16:00",tp:19.3,toh:26.6,tm:20.7,tvl:6.6,tk:359,s:[{i:"Jajca trdo kuhana (2×)",g:120,p:15.6,oh:0.8,m:13.2,vl:0.0,k:186},{i:"Hruška",g:150,p:0.6,oh:22.5,m:0.2,vl:4.7,k:86},{i:"Mandlji",g:15,p:3.1,oh:3.3,m:7.3,vl:1.9,k:87}]},
+    {cas:"19:00–20:00",tp:38.9,toh:33.3,tm:13.0,tvl:10.3,tk:385,s:[{i:"Orada file",g:130,p:26.0,oh:0.0,m:3.9,vl:0.0,k:136},{i:"Fižol kuhan",g:100,p:8.7,oh:22.8,m:0.5,vl:6.4,k:127},{i:"Brokoli",g:150,p:4.2,oh:10.5,m:0.6,vl:3.9,k:51},{i:"Oljčno olje",g:8,p:0.0,oh:0.0,m:8.0,vl:0.0,k:71}]}
+   ]},
+  {day:"Sobota",dp:115,doh:103,dm:69,dvl:36,dk:1443,
+   obroki:[
+    {cas:"8:00–9:00",tp:20.0,toh:11.6,tm:27.5,tvl:7.9,tk:356,s:[{i:"Jajca (2×60g)",g:120,p:15.6,oh:0.8,m:13.2,vl:0.0,k:186},{i:"Avokado",g:70,p:1.4,oh:6.3,m:10.5,vl:4.7,k:112},{i:"Rukola",g:60,p:1.6,oh:2.2,m:0.4,vl:1.0,k:15},{i:"Lanena semena",g:8,p:1.4,oh:2.3,m:3.4,vl:2.2,k:43}]},
+    {cas:"12:30–13:30",tp:37.3,toh:40.7,tm:18.7,tvl:6.9,tk:460,s:[{i:"Piščančje bedre b/k",g:110,p:27.5,oh:0.0,m:8.8,vl:0.0,k:187},{i:"Rjavi riž kuhan",g:120,p:3.1,oh:27.6,m:1.1,vl:2.2,k:133},{i:"Brokoli",g:150,p:4.2,oh:10.5,m:0.6,vl:3.9,k:51},{i:"Gobe",g:80,p:2.5,oh:2.6,m:0.2,vl:0.8,k:18},{i:"Oljčno olje",g:8,p:0.0,oh:0.0,m:8.0,vl:0.0,k:71}]},
+    {cas:"16:00–16:30",tp:23.1,toh:24.8,tm:9.1,tvl:10.7,tk:259,s:[{i:"Grški jogurt 0%",g:180,p:18.0,oh:6.8,m:0.0,vl:0.0,k:99},{i:"Maline",g:100,p:1.2,oh:12.0,m:0.7,vl:6.5,k:52},{i:"Chia semena",g:8,p:1.4,oh:3.4,m:2.5,vl:2.7,k:39},{i:"Mandlji",g:12,p:2.5,oh:2.6,m:5.9,vl:1.5,k:69}]},
+    {cas:"19:30–20:30",tp:34.7,toh:26.0,tm:13.9,tvl:10.0,tk:368,s:[{i:"Brancin file",g:130,p:24.7,oh:0.0,m:5.2,vl:0.0,k:150},{i:"Leča kuhana",g:100,p:9.0,oh:20.0,m:0.4,vl:8.0,k:116},{i:"Paprika",g:100,p:1.0,oh:6.0,m:0.3,vl:2.0,k:31},{i:"Oljčno olje",g:8,p:0.0,oh:0.0,m:8.0,vl:0.0,k:71}]}
+   ]},
+  {day:"Nedelja",dp:128,doh:154,dm:51,dvl:30,dk:1573,
+   obroki:[
+    {cas:"8:00–9:00",tp:21.9,toh:49.2,tm:5.7,tvl:8.8,tk:336,s:[{i:"Ovseni kosmiči b/g",g:40,p:5.2,oh:23.2,m:2.8,vl:4.0,k:148},{i:"Skuta nizkomastna",g:120,p:14.4,oh:4.2,m:0.2,vl:0.0,k:78},{i:"Banana",g:80,p:0.9,oh:18.4,m:0.2,vl:2.1,k:71},{i:"Chia semena",g:8,p:1.4,oh:3.4,m:2.5,vl:2.7,k:39}]},
+    {cas:"13:00–14:00",tp:46.1,toh:51.2,tm:12.1,tvl:10.7,tk:496,s:[{i:"Tuna v last. soku",g:130,p:33.8,oh:0.0,m:1.3,vl:0.0,k:151},{i:"Kvinoja kuhana",g:120,p:5.3,oh:25.6,m:2.3,vl:3.4,k:144},{i:"Fižol kuhan",g:70,p:6.1,oh:16.0,m:0.3,vl:4.5,k:89},{i:"Korenje",g:100,p:0.9,oh:9.6,m:0.2,vl:2.8,k:41},{i:"Oljčno olje",g:8,p:0.0,oh:0.0,m:8.0,vl:0.0,k:71}]},
+    {cas:"16:30–17:00",tp:19.1,toh:22.3,tm:20.8,tvl:5.0,tk:341,s:[{i:"Jajca (2×60g)",g:120,p:15.6,oh:0.8,m:13.2,vl:0.0,k:186},{i:"Jabolko",g:130,p:0.4,oh:18.2,m:0.3,vl:3.1,k:68},{i:"Mandlji",g:15,p:3.1,oh:3.3,m:7.3,vl:1.9,k:87}]},
+    {cas:"19:30–20:30",tp:40.8,toh:31.3,tm:12.7,tvl:5.9,tk:400,s:[{i:"Piščančje prsi",g:110,p:34.1,oh:0.0,m:4.0,vl:0.0,k:182},{i:"Sladki krompir",g:120,p:2.4,oh:24.0,m:0.1,vl:3.6,k:103},{i:"Bučke",g:150,p:1.8,oh:4.7,m:0.4,vl:1.5,k:26},{i:"Gobe",g:80,p:2.5,oh:2.6,m:0.2,vl:0.8,k:18},{i:"Oljčno olje",g:8,p:0.0,oh:0.0,m:8.0,vl:0.0,k:71}]}
+   ]}
+];
+
+const OLABELS=["🌅 ZAJTRK","☀️ KOSILO","🍎 MALICA","🌙 VEČERJA"];
+const OC=["#ce93d8","#80cbc4","#ffb74d","#f48fb1"];
+let cur=0;
+
+function pC(p){return p>=110?"c-green":p>=95?"c-yellow":"c-red";}
+function kC(k){return k<=1600?"c-green":k<=1700?"c-yellow":"c-red";}
+function vlC(v){return v>=28?"c-teal":v>=22?"c-yellow":"c-red";}
+
+function toggle(i){
+  const el=document.getElementById("ob"+i);
+  const h=document.getElementById("h"+i);
+  const open=el.classList.toggle("open");
+  h.textContent=open?"▲":"▼";
+}
+
+function render(){
+  const d=DAYS[cur];
+  document.getElementById("dayTabs").innerHTML=DAYS.map((x,i)=>
+    `<button class="day-btn${cur===i?" active":""}" onclick="cur=${i};render()">${x.day.slice(0,3)}</button>`
+  ).join("");
+
+  document.getElementById("stats").innerHTML=[
+    ["kcal",d.dk,kC(d.dk)],
+    ["belj.",d.dp+"g",pC(d.dp)],
+    ["OH",d.doh+"g","c-yellow"],
+    ["vlaknine",d.dvl+"g",vlC(d.dvl)],
+    ["mašč.",d.dm+"g","c-purple"],
+  ].map(([l,v,c])=>`<div class="stat"><div class="val ${c}">${v}</div><div class="lbl">${l}</div></div>`).join("");
+
+  document.getElementById("obroki").innerHTML=d.obroki.map((o,i)=>{
+    const bc=OC[i];
+    const preview=o.s.slice(0,2).map(x=>x.i).join(" + ")+(o.s.length>2?` +${o.s.length-2}`:"");
+    const rows=o.s.map((s,j)=>`<div class="srow">
+      <div><span class="sname">${s.i}</span><span class="sgrams">${s.g}g</span></div>
+      <div class="snums"><span class="sp">${s.p}P</span> · ${s.oh}OH · <span class="svl">${s.vl}vl</span> · <span class="sk">${s.k}</span></div>
+    </div>`).join("");
+    return `<div class="ocard" style="border-left:4px solid ${bc}">
+      <div class="ocard-head" onclick="toggle(${i})">
+        <div class="ocard-row1">
+          <div>
+            <div class="ocard-label" style="color:${bc}">${OLABELS[i]} · ${o.cas}</div>
+            <div class="ocard-preview">${preview}</div>
+          </div>
+          <div style="text-align:right;margin-left:10px;flex-shrink:0">
+            <div class="ocard-kcal" style="color:${bc}">${o.tk}</div>
+            <div class="ocard-prot" style="color:#a5d6a7">${o.tp}g P</div>
+          </div>
+        </div>
+        <div class="macros">
+          <span class="mc"><span style="font-weight:bold;color:#a5d6a7">${o.tp}g</span><span style="color:#4a3a5a"> P</span></span>
+          <span class="mc"><span style="font-weight:bold;color:#fff176">${o.toh}g</span><span style="color:#4a3a5a"> OH</span></span>
+          <span class="mc"><span style="font-weight:bold;color:#80cbc4">${o.tvl}g</span><span style="color:#4a3a5a"> vl</span></span>
+          <span class="mc"><span style="font-weight:bold;color:#ffcc80">${o.tm}g</span><span style="color:#4a3a5a"> M</span></span>
+          <span class="toggle-hint" id="h${i}">▼</span>
+        </div>
+      </div>
+      <div class="ocard-body" id="ob${i}"><div class="divider">${rows}</div></div>
+    </div>`;
+  }).join("");
+}
+render();
+</script>
+</body>
+</html>
