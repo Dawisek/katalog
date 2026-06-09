@@ -1,0 +1,1257 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="Teža & Pas" />
+  <meta name="theme-color" content="#0F1117" />
+  <link rel="apple-touch-icon" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAxODAgMTgwIj48cmVjdCB3aWR0aD0iMTgwIiBoZWlnaHQ9IjE4MCIgcng9IjQwIiBmaWxsPSIjMEYxMTE3Ii8+PGVsbGlwc2UgY3g9IjkwIiBjeT0iOTUiIHJ4PSIzNCIgcnk9IjIwIiBmaWxsPSIjMUMyMzMzIiBzdHJva2U9IiMyQTMzNTAiIHN0cm9rZS13aWR0aD0iMS41Ii8+PHJlY3QgeD0iNTAiIHk9IjEwOCIgd2lkdGg9IjgwIiBoZWlnaHQ9IjI4IiByeD0iOCIgZmlsbD0iIzFDMjMzMyIgc3Ryb2tlPSIjMkEzMzUwIiBzdHJva2Utd2lkdGg9IjEuNSIvPjx0ZXh0IHg9IjkwIiB5PSIxMDAiIHRleHQtYW5jaG9yPSJtaWRkbGUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxMyIgZm9udC13ZWlnaHQ9IjcwMCIgZmlsbD0iIzAwQzlBNyI+a2c8L3RleHQ+PHRleHQgeD0iOTAiIHk9IjEyNyIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZm9udC1mYW1pbHk9IkFyaWFsIiBmb250LXNpemU9IjExIiBmb250LXdlaWdodD0iNjAwIiBmaWxsPSIjNkI3QTk5Ij50ZcW+YTwvdGV4dD48cG9seWxpbmUgcG9pbnRzPSI1Miw3OCA2Niw2OCA4MCw3MiA5NCw2MCAxMDgsNTQgMTIyLDQ0IDEzNiw0OCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSIjMDBDOUE3IiBzdHJva2Utd2lkdGg9IjMiIHN0cm9rZS1saW5lY2FwPSJyb3VuZCIgc3Ryb2tlLWxpbmVqb2luPSJyb3VuZCIvPjxjaXJjbGUgY3g9IjEzNiIgY3k9IjQ4IiByPSI1IiBmaWxsPSIjMDBDOUE3Ii8+PC9zdmc+" />
+  <title>Teža & Pas</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    * { -webkit-tap-highlight-color: transparent; }
+    input, button, select { -webkit-appearance: none; }
+
+    :root {
+      --bg:      #0F1117;
+      --surf:    #161B27;
+      --card:    #1C2333;
+      --border:  #2A3350;
+      --accent:  #00C9A7;
+      --blue:    #4A9EFF;
+      --warn:    #FFC400;
+      --danger:  #FF6B6B;
+      --text:    #E8EDF5;
+      --muted:   #6B7A99;
+      --mono:    'JetBrains Mono', monospace;
+      --sans:    'Inter', sans-serif;
+      --radius:  16px;
+      --sat: env(safe-area-inset-top, 0px);
+      --sab: env(safe-area-inset-bottom, 0px);
+      --sal: env(safe-area-inset-left, 0px);
+      --sar: env(safe-area-inset-right, 0px);
+    }
+
+    /* light mode */
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg:     #F0F2F7;
+        --surf:   #FFFFFF;
+        --card:   #FFFFFF;
+        --border: #DDE1EC;
+        --text:   #111827;
+        --muted:  #6B7A99;
+      }
+    }
+
+    html { background: var(--bg); }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--sans);
+      min-height: 100vh;
+      padding: calc(var(--sat) + 20px) calc(var(--sar) + 16px) calc(var(--sab) + 80px) calc(var(--sal) + 16px);
+    }
+
+    /* ── Quick entry bar ── */
+    .quick-bar {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--bg);
+      padding: calc(var(--sat) + 10px) calc(var(--sar) + 12px) 10px calc(var(--sal) + 12px);
+      margin: calc(-1 * (var(--sat) + 20px)) -16px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+    }
+    .quick-bar input {
+      flex: 1;
+      background: var(--surf);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 16px;
+      padding: 9px 12px;
+      outline: none;
+      min-width: 0;
+    }
+    .quick-bar input:focus { border-color: var(--accent); }
+    .quick-bar input::placeholder { color: var(--muted); font-size: 13px; }
+    .quick-btn {
+      background: var(--accent);
+      color: #000;
+      border: none;
+      border-radius: 10px;
+      padding: 9px 16px;
+      font-family: var(--sans);
+      font-size: 0.85rem;
+      font-weight: 700;
+      cursor: pointer;
+      white-space: nowrap;
+      min-height: 40px;
+    }
+    .quick-btn:active { opacity: .8; transform: scale(.97); }
+
+    /* ── Header ── */
+    header {
+      max-width: 860px;
+      margin: 0 auto 20px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    .header-left { display: flex; align-items: flex-end; gap: 12px; }
+    .logo-dot {
+      width: 11px; height: 11px;
+      background: var(--accent);
+      border-radius: 50%;
+      box-shadow: 0 0 10px var(--accent);
+      flex-shrink: 0;
+      margin-bottom: 4px;
+    }
+    header h1 { font-size: 1.4rem; font-weight: 700; letter-spacing: -0.03em; }
+    header h1 span { color: var(--accent); }
+    .streak-badge {
+      display: flex; align-items: center; gap: 5px;
+      background: var(--surf);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 5px 12px;
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: var(--warn);
+      white-space: nowrap;
+    }
+
+    /* ── Layout ── */
+    .wrap { max-width: 860px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+
+    /* ── Card ── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+    }
+    .card-title {
+      font-size: 0.68rem;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    /* ── Stats ── */
+    .stats-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+    @media (min-width: 500px) { .stats-row { grid-template-columns: repeat(4, 1fr); } }
+    .stat {
+      background: var(--surf);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 14px 16px;
+    }
+    .stat-label { font-size: 0.68rem; color: var(--muted); margin-bottom: 5px; }
+    .stat-value { font-family: var(--mono); font-size: 1.4rem; font-weight: 500; }
+    .stat-value.green { color: var(--accent); }
+    .stat-value.blue  { color: var(--blue); }
+    .stat-delta { font-size: 0.68rem; margin-top: 3px; font-family: var(--mono); }
+    .up   { color: var(--danger); }
+    .down { color: var(--accent); }
+    .same { color: var(--muted); }
+
+    /* ── Goals ── */
+    .goals-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .goal-block { display: flex; flex-direction: column; gap: 8px; }
+    .goal-row { display: flex; align-items: center; gap: 8px; }
+    .goal-row input {
+      flex: 1;
+      background: var(--surf);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 16px;
+      padding: 7px 10px;
+      outline: none;
+      min-width: 0;
+    }
+    .goal-row input:focus { border-color: var(--accent); }
+    .goal-label { font-size: 0.72rem; color: var(--muted); margin-bottom: 2px; }
+    .progress-wrap { position: relative; height: 8px; background: var(--surf); border-radius: 4px; overflow: hidden; border: 1px solid var(--border); }
+    .progress-bar {
+      height: 100%;
+      border-radius: 4px;
+      transition: width 0.6s cubic-bezier(.4,0,.2,1);
+    }
+    .progress-bar.weight-bar { background: linear-gradient(90deg, var(--accent), #00e8c0); }
+    .progress-bar.waist-bar  { background: linear-gradient(90deg, var(--blue), #82cfff); }
+    .goal-info { display: flex; justify-content: space-between; font-size: 0.68rem; color: var(--muted); font-family: var(--mono); }
+    .goal-eta { font-size: 0.7rem; color: var(--muted); margin-top: 2px; }
+    .goal-eta span { color: var(--accent); font-weight: 600; }
+
+    /* ── Weekly summary ── */
+    .weekly-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; }
+    .weekly-item { background: var(--surf); border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; }
+    .weekly-item .wlabel { font-size: 0.65rem; color: var(--muted); margin-bottom: 4px; }
+    .weekly-item .wval { font-family: var(--mono); font-size: 1rem; font-weight: 500; }
+
+    /* ── Form ── */
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    @media (max-width: 400px) { .form-row { grid-template-columns: 1fr; } }
+    .field label { display: block; font-size: 0.68rem; color: var(--muted); margin-bottom: 6px; letter-spacing: 0.06em; text-transform: uppercase; }
+    .field input {
+      width: 100%;
+      background: var(--surf);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 16px;
+      padding: 10px 13px;
+      outline: none;
+      transition: border-color .2s, box-shadow .2s;
+    }
+    .field input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(0,201,167,0.15); }
+    .field input[readonly] { color: var(--muted); font-size: 0.8rem; }
+    .full { grid-column: 1 / -1; }
+    .btn {
+      grid-column: 1 / -1;
+      background: var(--accent);
+      color: #000;
+      border: none;
+      border-radius: 10px;
+      padding: 13px 24px;
+      font-family: var(--sans);
+      font-size: 0.9rem;
+      font-weight: 700;
+      cursor: pointer;
+      min-height: 48px;
+      box-shadow: 0 4px 20px rgba(0,201,167,0.25);
+      transition: opacity .15s, transform .1s;
+    }
+    .btn:active { transform: scale(.98); opacity: .9; }
+
+    /* ── Tabs ── */
+    .tabs { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+    .tab {
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--muted);
+      font-size: 0.75rem;
+      font-family: var(--sans);
+      font-weight: 500;
+      padding: 6px 13px;
+      cursor: pointer;
+      transition: all .2s;
+      min-height: 34px;
+    }
+    .tab.active { background: var(--accent); color: #000; border-color: var(--accent); }
+
+    .chart-wrap { position: relative; height: 240px; }
+
+    /* ── Backup section ── */
+    .backup-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn-secondary {
+      background: var(--surf);
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 16px;
+      font-family: var(--sans);
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      min-height: 42px;
+      transition: border-color .2s;
+    }
+    .btn-secondary:hover { border-color: var(--accent); }
+    .btn-secondary:active { opacity: .8; }
+    .btn-danger { border-color: rgba(255,107,107,.4); color: var(--danger); }
+    .btn-danger:hover { border-color: var(--danger); background: rgba(255,107,107,.08); }
+
+    /* ── Reminder ── */
+    .reminder-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+    .reminder-row input[type=time] {
+      background: var(--surf);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: var(--mono);
+      font-size: 16px;
+      padding: 9px 13px;
+      outline: none;
+    }
+    .reminder-row input[type=time]:focus { border-color: var(--accent); }
+    .toggle-wrap { display: flex; align-items: center; gap: 8px; }
+    .toggle {
+      position: relative;
+      width: 44px; height: 26px;
+      background: var(--border);
+      border-radius: 13px;
+      cursor: pointer;
+      transition: background .2s;
+      border: none;
+      flex-shrink: 0;
+    }
+    .toggle.on { background: var(--accent); }
+    .toggle::after {
+      content: '';
+      position: absolute;
+      top: 3px; left: 3px;
+      width: 20px; height: 20px;
+      background: #fff;
+      border-radius: 50%;
+      transition: transform .2s;
+      box-shadow: 0 1px 4px rgba(0,0,0,.3);
+    }
+    .toggle.on::after { transform: translateX(18px); }
+    .toggle-label { font-size: 0.82rem; color: var(--text); }
+    .notif-status { font-size: 0.72rem; color: var(--muted); }
+
+    /* ── History table ── */
+    .table-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
+    thead th { text-align: left; font-size: 0.65rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); padding: 0 8px 10px; border-bottom: 1px solid var(--border); }
+    tbody tr { border-bottom: 1px solid rgba(42,51,80,0.4); }
+    tbody td { padding: 9px 8px; font-family: var(--mono); font-size: 0.78rem; }
+    td.note-col { font-family: var(--sans); color: var(--muted); font-size: 0.75rem; max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .del-btn {
+      background: none;
+      border: 1px solid rgba(255,107,107,0.3);
+      color: var(--danger);
+      border-radius: 6px;
+      padding: 0;
+      width: 30px; height: 30px;
+      display: inline-flex; align-items: center; justify-content: center;
+      cursor: pointer;
+      font-size: 0.78rem;
+    }
+    .del-btn:active { background: rgba(255,107,107,0.12); }
+
+    .empty-state { text-align: center; padding: 36px 0; color: var(--muted); font-size: 0.85rem; }
+    .empty-state .icon { font-size: 2.2rem; margin-bottom: 8px; }
+
+    /* ── BMI badge ── */
+    .bmi-badge { display: inline-block; font-size: 0.65rem; font-weight: 600; padding: 2px 7px; border-radius: 20px; }
+    .bmi-pod  { background: rgba(74,158,255,.2);  color: var(--blue); }
+    .bmi-norm { background: rgba(0,201,167,.2);   color: var(--accent); }
+    .bmi-pre  { background: rgba(255,196,0,.2);   color: var(--warn); }
+    .bmi-ob   { background: rgba(255,107,107,.2); color: var(--danger); }
+
+    /* ── Toast ── */
+    .toast {
+      position: fixed;
+      bottom: calc(var(--sab) + 20px);
+      left: 50%; transform: translateX(-50%) translateY(20px);
+      background: var(--accent);
+      color: #000;
+      font-size: 0.82rem;
+      font-weight: 600;
+      padding: 10px 20px;
+      border-radius: 30px;
+      box-shadow: 0 4px 20px rgba(0,0,0,.3);
+      opacity: 0;
+      transition: opacity .25s, transform .25s;
+      pointer-events: none;
+      z-index: 999;
+      white-space: nowrap;
+    }
+    .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    .toast.error { background: var(--danger); color: #fff; }
+
+    /* ── Collapsible ── */
+    .collapsible-header { cursor: pointer; user-select: none; display: flex; align-items: center; justify-content: space-between; }
+    .collapsible-header .chevron { font-size: 0.75rem; transition: transform .25s; color: var(--muted); }
+    .collapsible-header.open .chevron { transform: rotate(180deg); }
+    .collapsible-body { overflow: hidden; max-height: 0; transition: max-height .3s ease; }
+    .collapsible-body.open { max-height: 1000px; }
+
+    @keyframes flash {
+      0%   { box-shadow: 0 0 0 3px rgba(0,201,167,.5); }
+      100% { box-shadow: 0 0 0 0px rgba(0,201,167,0); }
+    }
+    .flash { animation: flash .6s ease; }
+  </style>
+</head>
+<body>
+
+<!-- Quick entry sticky bar -->
+<div class="quick-bar" id="quickBar">
+  <input type="number" id="quickWeight" placeholder="Teža (kg)" step="0.1" min="20" max="300" inputmode="decimal" />
+  <input type="number" id="quickWaist"  placeholder="Pas (cm)"  step="0.5" min="40" max="200" inputmode="decimal" style="display:none" />
+  <button class="quick-btn" id="quickSave">+ Vnesi</button>
+</div>
+
+<div class="wrap">
+
+  <!-- Header -->
+  <header>
+    <div class="header-left">
+      <div class="logo-dot"></div>
+      <div>
+        <h1>Teža <span>&</span> Pas</h1>
+      </div>
+    </div>
+    <div class="streak-badge" id="streakBadge">🔥 0 dni</div>
+  </header>
+
+  <!-- Stats -->
+  <div class="stats-row" id="statsRow">
+    <div class="stat">
+      <div class="stat-label">Zadnja teža</div>
+      <div class="stat-value green" id="statWeight">—</div>
+      <div class="stat-delta" id="statWeightDelta"></div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Zadnji pas</div>
+      <div class="stat-value blue" id="statWaist">—</div>
+      <div class="stat-delta" id="statWaistDelta"></div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">BMI</div>
+      <div class="stat-value" id="statBMI">—</div>
+      <div id="statBMIBadge"></div>
+    </div>
+    <div class="stat">
+      <div class="stat-label">Meritve</div>
+      <div class="stat-value" id="statCount">0</div>
+      <div class="stat-delta same" id="statWeekly"></div>
+    </div>
+  </div>
+
+  <!-- Goals -->
+  <div class="card">
+    <div class="card-title collapsible-header" id="goalsHeader">
+      <span>Cilji & napredek</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="collapsible-body" id="goalsBody">
+      <div class="goals-grid" style="margin-top:4px">
+        <div class="goal-block">
+          <div class="goal-label">Ciljna teža (kg)</div>
+          <div class="goal-row">
+            <input type="number" id="goalWeight" placeholder="npr. 75" step="0.5" inputmode="decimal" />
+          </div>
+          <div class="progress-wrap"><div class="progress-bar weight-bar" id="progressWeight" style="width:0%"></div></div>
+          <div class="goal-info">
+            <span id="goalWeightLeft">—</span>
+            <span id="goalWeightPct">—</span>
+          </div>
+          <div class="goal-eta" id="goalWeightETA"></div>
+        </div>
+        <div class="goal-block">
+          <div class="goal-label">Ciljni pas (cm)</div>
+          <div class="goal-row">
+            <input type="number" id="goalWaist" placeholder="npr. 80" step="0.5" inputmode="decimal" />
+          </div>
+          <div class="progress-wrap"><div class="progress-bar waist-bar" id="progressWaist" style="width:0%"></div></div>
+          <div class="goal-info">
+            <span id="goalWaistLeft">—</span>
+            <span id="goalWaistPct">—</span>
+          </div>
+          <div class="goal-eta" id="goalWaistETA"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Weekly summary -->
+  <div class="card">
+    <div class="card-title collapsible-header" id="weeklyHeader">
+      <span>Tedenski povzetek</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="collapsible-body" id="weeklyBody">
+      <div class="weekly-grid" style="margin-top:4px">
+        <div class="weekly-item">
+          <div class="wlabel">Povp. teža ta teden</div>
+          <div class="wval" id="wAvgWeight">—</div>
+        </div>
+        <div class="weekly-item">
+          <div class="wlabel">Sprememba vs. prejšnji</div>
+          <div class="wval" id="wWeekDiff">—</div>
+        </div>
+        <div class="weekly-item">
+          <div class="wlabel">Povp. pas ta teden</div>
+          <div class="wval" id="wAvgWaist">—</div>
+        </div>
+        <div class="weekly-item">
+          <div class="wlabel">Min teža ta teden</div>
+          <div class="wval" id="wMinWeight">—</div>
+        </div>
+        <div class="weekly-item">
+          <div class="wlabel">Max teža ta teden</div>
+          <div class="wval" id="wMaxWeight">—</div>
+        </div>
+        <div class="weekly-item">
+          <div class="wlabel">Meritve ta teden</div>
+          <div class="wval" id="wCount">0</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Chart -->
+  <div class="card">
+    <div class="card-title">Gibanje skozi čas</div>
+    <div class="tabs">
+      <button class="tab active" data-chart="weight">Teža</button>
+      <button class="tab" data-chart="waist">Pas</button>
+      <button class="tab" data-chart="both">Oboje</button>
+    </div>
+    <div class="chart-wrap"><canvas id="mainChart"></canvas></div>
+  </div>
+
+  <!-- Detailed entry form -->
+  <div class="card">
+    <div class="card-title collapsible-header" id="formHeader">
+      <span>Podroben vnos</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="collapsible-body" id="formBody">
+      <div class="form-row" style="margin-top:4px">
+        <div class="field">
+          <label>Datum in ura</label>
+          <input type="text" id="inpDatetime" readonly />
+        </div>
+        <div class="field">
+          <label>Teža (kg)</label>
+          <input type="number" id="inpWeight" placeholder="npr. 78.5" step="0.1" inputmode="decimal" />
+        </div>
+        <div class="field">
+          <label>Obseg pasu (cm)</label>
+          <input type="number" id="inpWaist" placeholder="npr. 85" step="0.5" inputmode="decimal" />
+        </div>
+        <div class="field">
+          <label>Višina (cm) <span style="color:var(--muted);font-size:.6rem">(za BMI)</span></label>
+          <input type="number" id="inpHeight" placeholder="npr. 178" step="1" inputmode="decimal" />
+        </div>
+        <div class="field full">
+          <label>Opomba</label>
+          <input type="text" id="inpNote" placeholder="npr. po treningu, zjutraj…" />
+        </div>
+        <button class="btn" id="btnSave">Shrani meritev</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Reminders -->
+  <div class="card">
+    <div class="card-title collapsible-header" id="reminderHeader">
+      <span>Dnevni opomnik</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="collapsible-body" id="reminderBody">
+      <div class="reminder-row" style="margin-top:4px">
+        <input type="time" id="reminderTime" value="07:00" />
+        <div class="toggle-wrap">
+          <button class="toggle" id="reminderToggle"></button>
+          <span class="toggle-label">Aktivno</span>
+        </div>
+      </div>
+      <div class="notif-status" id="notifStatus" style="margin-top:8px">
+        Opomniki zahtevajo dovoljenje za obvestila.
+      </div>
+    </div>
+  </div>
+
+  <!-- Backup & Restore -->
+  <div class="card">
+    <div class="card-title collapsible-header" id="backupHeader">
+      <span>Varnostna kopija</span>
+      <span class="chevron">▼</span>
+    </div>
+    <div class="collapsible-body" id="backupBody">
+      <div style="margin-top:4px; font-size:0.78rem; color:var(--muted); margin-bottom:12px; line-height:1.5">
+        ⚠️ Safari lahko pobriše podatke pri nizki zalogi prostora. Priporočamo redno izvažanje!
+      </div>
+      <div class="backup-row">
+        <button class="btn-secondary" id="btnExportJSON">📦 Izvoz JSON</button>
+        <button class="btn-secondary" id="btnExportCSV">📊 Izvoz CSV</button>
+        <button class="btn-secondary" id="btnImport">📥 Uvoz JSON</button>
+        <button class="btn-secondary btn-danger" id="btnClearAll">🗑 Izbriši vse</button>
+      </div>
+      <input type="file" id="fileInput" accept=".json" style="display:none" />
+    </div>
+  </div>
+
+  <!-- History -->
+  <div class="card">
+    <div class="card-title">Zgodovina meritev</div>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Datum</th>
+            <th>Teža</th>
+            <th>Pas</th>
+            <th>BMI</th>
+            <th>Opomba</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody id="historyBody"></tbody>
+      </table>
+      <div class="empty-state" id="emptyState">
+        <div class="icon">📊</div>
+        <div>Začni z vnosom zgoraj!</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+// ══════════════════════════════════════════════
+//  Storage helpers
+// ══════════════════════════════════════════════
+const KEY      = 'health_v2';
+const HKEY     = 'health_height';
+const GKEY     = 'health_goals';
+const RKEY     = 'health_reminder';
+
+function load()      { try { return JSON.parse(localStorage.getItem(KEY)) || []; } catch { return []; } }
+function saveRecs(d) { localStorage.setItem(KEY, JSON.stringify(d)); }
+
+let records     = load();
+let savedHeight = parseFloat(localStorage.getItem(HKEY)) || null;
+let goals       = JSON.parse(localStorage.getItem(GKEY) || '{}');
+let reminder    = JSON.parse(localStorage.getItem(RKEY) || '{"time":"07:00","on":false}');
+
+// ══════════════════════════════════════════════
+//  Toast
+// ══════════════════════════════════════════════
+function showToast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = 'toast' + (isError ? ' error' : '');
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => { t.classList.add('show'); });
+  });
+  setTimeout(() => t.classList.remove('show'), 2400);
+}
+
+// ══════════════════════════════════════════════
+//  Datetime
+// ══════════════════════════════════════════════
+function formatDate(d) {
+  const p = n => String(n).padStart(2,'0');
+  return `${d.getDate()}.${p(d.getMonth()+1)}.${d.getFullYear()} ${p(d.getHours())}:${p(d.getMinutes())}`;
+}
+const inpDatetime = document.getElementById('inpDatetime');
+function tick() { inpDatetime.value = formatDate(new Date()); }
+tick();
+setInterval(tick, 15000);
+document.getElementById('inpWeight').addEventListener('focus', tick);
+
+// ══════════════════════════════════════════════
+//  BMI
+// ══════════════════════════════════════════════
+function calcBMI(weight, height) {
+  if (!weight || !height) return null;
+  return (weight / ((height/100)**2)).toFixed(1);
+}
+function bmiCat(b) {
+  b = parseFloat(b);
+  if (b < 18.5) return { label:'Prenizka TT', cls:'bmi-pod' };
+  if (b < 25)   return { label:'Normalna TT', cls:'bmi-norm' };
+  if (b < 30)   return { label:'Prekomerna TT', cls:'bmi-pre' };
+  return { label:'Debelost', cls:'bmi-ob' };
+}
+
+// ══════════════════════════════════════════════
+//  Height persistence
+// ══════════════════════════════════════════════
+const inpHeight = document.getElementById('inpHeight');
+if (savedHeight) inpHeight.value = savedHeight;
+inpHeight.addEventListener('change', () => {
+  if (inpHeight.value) { savedHeight = parseFloat(inpHeight.value); localStorage.setItem(HKEY, savedHeight); }
+});
+
+// ══════════════════════════════════════════════
+//  Goals init
+// ══════════════════════════════════════════════
+const goalWeightEl = document.getElementById('goalWeight');
+const goalWaistEl  = document.getElementById('goalWaist');
+if (goals.weight) goalWeightEl.value = goals.weight;
+if (goals.waist)  goalWaistEl.value  = goals.waist;
+
+function saveGoals() {
+  goals.weight = parseFloat(goalWeightEl.value) || null;
+  goals.waist  = parseFloat(goalWaistEl.value)  || null;
+  localStorage.setItem(GKEY, JSON.stringify(goals));
+  render();
+}
+goalWeightEl.addEventListener('change', saveGoals);
+goalWaistEl.addEventListener('change', saveGoals);
+
+// ══════════════════════════════════════════════
+//  Streak calculation
+// ══════════════════════════════════════════════
+function calcStreak() {
+  if (!records.length) return 0;
+  const days = new Set(records.map(r => r.isoDate.slice(0,10)));
+  const sorted = [...days].sort().reverse();
+  const today = new Date().toISOString().slice(0,10);
+  const yesterday = new Date(Date.now()-86400000).toISOString().slice(0,10);
+  if (sorted[0] !== today && sorted[0] !== yesterday) return 0;
+  let streak = 0;
+  let cur = sorted[0] === today ? new Date() : new Date(Date.now()-86400000);
+  for (const day of sorted) {
+    const expected = cur.toISOString().slice(0,10);
+    if (day === expected) { streak++; cur = new Date(cur - 86400000); }
+    else break;
+  }
+  return streak;
+}
+
+// ══════════════════════════════════════════════
+//  Linear regression for trend
+// ══════════════════════════════════════════════
+function linReg(points) {
+  // points: [{x (ms), y}]
+  const n = points.length;
+  if (n < 2) return null;
+  let sx=0, sy=0, sxx=0, sxy=0;
+  for (const p of points) { sx+=p.x; sy+=p.y; sxx+=p.x*p.x; sxy+=p.x*p.y; }
+  const denom = n*sxx - sx*sx;
+  if (!denom) return null;
+  const m = (n*sxy - sx*sy) / denom; // kg per ms
+  const b = (sy - m*sx) / n;
+  return { m, b }; // y = m*x + b
+}
+
+function etaText(current, goal, kgPerDay) {
+  if (!kgPerDay || Math.abs(kgPerDay) < 1e-10) return '';
+  const diff = goal - current;
+  if ((diff < 0 && kgPerDay > 0) || (diff > 0 && kgPerDay < 0)) return '';
+  const days = Math.abs(diff / kgPerDay);
+  if (days > 730) return '';
+  const date = new Date(Date.now() + days*86400000);
+  const d = date.getDate(), mo = date.getMonth()+1, y = date.getFullYear();
+  return `Predviden cilj: <span>${d}.${mo}.${y}</span> (čez ~${Math.round(days)} dni)`;
+}
+
+// ══════════════════════════════════════════════
+//  Quick entry
+// ══════════════════════════════════════════════
+document.getElementById('quickSave').addEventListener('click', () => {
+  const w = parseFloat(document.getElementById('quickWeight').value);
+  const wa = parseFloat(document.getElementById('quickWaist').value);
+  if (!w && !wa) { showToast('Vnesi vsaj težo!', true); return; }
+  tick();
+  const r = { id: Date.now(), datetime: inpDatetime.value, isoDate: new Date().toISOString(), weight: w||null, waist: wa||null, height: savedHeight, note: '' };
+  records.unshift(r);
+  saveRecs(records);
+  document.getElementById('quickWeight').value = '';
+  document.getElementById('quickWaist').value  = '';
+  render();
+  showToast('✓ Meritev shranjena');
+});
+
+// Also trigger on Enter in quick inputs
+['quickWeight','quickWaist'].forEach(id => {
+  document.getElementById(id).addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('quickSave').click();
+  });
+});
+
+// ══════════════════════════════════════════════
+//  Detailed save
+// ══════════════════════════════════════════════
+document.getElementById('btnSave').addEventListener('click', () => {
+  const weight = parseFloat(document.getElementById('inpWeight').value);
+  const waist  = parseFloat(document.getElementById('inpWaist').value);
+  const height = parseFloat(inpHeight.value);
+  const note   = document.getElementById('inpNote').value.trim();
+  if (!weight && !waist) { showToast('Vnesi vsaj težo ali pas!', true); return; }
+  tick();
+  if (height) { savedHeight = height; localStorage.setItem(HKEY, height); }
+  const r = { id: Date.now(), datetime: inpDatetime.value, isoDate: new Date().toISOString(), weight: weight||null, waist: waist||null, height: height||savedHeight||null, note };
+  records.unshift(r);
+  saveRecs(records);
+  document.getElementById('inpWeight').value = '';
+  document.getElementById('inpWaist').value  = '';
+  document.getElementById('inpNote').value   = '';
+  render();
+  showToast('✓ Meritev shranjena');
+  document.querySelector('.card').classList.add('flash');
+  setTimeout(() => document.querySelector('.card').classList.remove('flash'), 600);
+});
+
+// ══════════════════════════════════════════════
+//  Delete
+// ══════════════════════════════════════════════
+function deleteRecord(id) {
+  if (!confirm('Izbriši to meritev?')) return;
+  records = records.filter(r => r.id !== id);
+  saveRecs(records);
+  render();
+  showToast('Meritev izbrisana');
+}
+
+// ══════════════════════════════════════════════
+//  Chart
+// ══════════════════════════════════════════════
+const ctx = document.getElementById('mainChart').getContext('2d');
+let activeChart = 'weight';
+Chart.defaults.color = '#6B7A99';
+Chart.defaults.font.family = "'Inter', sans-serif";
+
+let chart = new Chart(ctx, {
+  type: 'line',
+  data: { labels: [], datasets: [] },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { position: 'top', labels: { boxWidth: 9, padding: 14, font: { size: 11 } } },
+      tooltip: {
+        backgroundColor: '#1C2333',
+        borderColor: '#2A3350',
+        borderWidth: 1,
+        titleFont: { size: 10 },
+        bodyFont: { family: "'JetBrains Mono', monospace", size: 11 },
+        padding: 9
+      }
+    },
+    scales: {
+      x: { grid: { color: 'rgba(42,51,80,0.4)' }, ticks: { maxRotation: 30, font: { size: 9 } } },
+      y: { grid: { color: 'rgba(42,51,80,0.4)' }, ticks: { font: { size: 10 } } },
+      y2: { display: false, grid: { drawOnChartArea: false }, ticks: { font: { size: 10 } } }
+    }
+  }
+});
+
+function updateChart() {
+  const sorted = [...records].sort((a,b) => new Date(a.isoDate)-new Date(b.isoDate));
+  const labels = sorted.map(r => r.datetime.split(' ')[0]);
+
+  // build trend line dataset
+  function trendDataset(pts, color, yAxisID) {
+    const valid = pts.map((v,i) => v != null ? {x: new Date(sorted[i].isoDate).getTime(), y: v} : null).filter(Boolean);
+    if (valid.length < 3) return null;
+    const reg = linReg(valid);
+    if (!reg) return null;
+    const trendVals = pts.map((v,i) => {
+      const ms = new Date(sorted[i].isoDate).getTime();
+      return parseFloat((reg.m * ms + reg.b).toFixed(2));
+    });
+    return {
+      label: 'Trend',
+      data: trendVals,
+      borderColor: color,
+      borderWidth: 1.5,
+      borderDash: [5,4],
+      pointRadius: 0,
+      fill: false,
+      tension: 0,
+      yAxisID: yAxisID || 'y'
+    };
+  }
+
+  if (activeChart === 'weight') {
+    const data = sorted.map(r => r.weight);
+    chart.options.scales.y2.display = false;
+    const ds = [{ label:'Teža (kg)', data, borderColor:'#00C9A7', backgroundColor:'rgba(0,201,167,0.1)', borderWidth:2.5, pointRadius:3.5, pointBackgroundColor:'#00C9A7', fill:true, tension:0.35 }];
+    const tr = trendDataset(data, 'rgba(0,201,167,0.5)', 'y');
+    if (tr) ds.push(tr);
+    chart.data = { labels, datasets: ds };
+  } else if (activeChart === 'waist') {
+    const data = sorted.map(r => r.waist);
+    chart.options.scales.y2.display = false;
+    const ds = [{ label:'Pas (cm)', data, borderColor:'#4A9EFF', backgroundColor:'rgba(74,158,255,0.1)', borderWidth:2.5, pointRadius:3.5, pointBackgroundColor:'#4A9EFF', fill:true, tension:0.35 }];
+    const tr = trendDataset(data, 'rgba(74,158,255,0.5)', 'y');
+    if (tr) ds.push(tr);
+    chart.data = { labels, datasets: ds };
+  } else {
+    chart.options.scales.y2.display = true;
+    const wData  = sorted.map(r => r.weight);
+    const waData = sorted.map(r => r.waist);
+    const ds = [
+      { label:'Teža (kg)', data:wData,  borderColor:'#00C9A7', backgroundColor:'rgba(0,201,167,0.05)',  borderWidth:2.5, pointRadius:3, pointBackgroundColor:'#00C9A7', fill:false, tension:0.35, yAxisID:'y' },
+      { label:'Pas (cm)',  data:waData, borderColor:'#4A9EFF', backgroundColor:'rgba(74,158,255,0.05)', borderWidth:2.5, pointRadius:3, pointBackgroundColor:'#4A9EFF', fill:false, tension:0.35, yAxisID:'y2' }
+    ];
+    const tw = trendDataset(wData,  'rgba(0,201,167,0.4)',  'y');
+    const twa= trendDataset(waData, 'rgba(74,158,255,0.4)', 'y2');
+    if (tw)  ds.push(tw);
+    if (twa) ds.push(twa);
+    chart.data = { labels, datasets: ds };
+  }
+  chart.update('none');
+}
+
+document.querySelectorAll('.tab').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeChart = btn.dataset.chart;
+    updateChart();
+  });
+});
+
+// ══════════════════════════════════════════════
+//  Stats
+// ══════════════════════════════════════════════
+function updateStats() {
+  const wW  = records.filter(r => r.weight != null);
+  const wWa = records.filter(r => r.waist  != null);
+  document.getElementById('statCount').textContent = records.length;
+
+  if (wW.length) {
+    const last = wW[0].weight;
+    document.getElementById('statWeight').textContent = last + ' kg';
+    if (wW.length > 1) {
+      const diff = (last - wW[1].weight).toFixed(1);
+      const sign = diff > 0 ? '+' : '';
+      const el = document.getElementById('statWeightDelta');
+      el.textContent = `${sign}${diff} kg`;
+      el.className = 'stat-delta ' + (diff > 0 ? 'up' : diff < 0 ? 'down' : 'same');
+    }
+  } else document.getElementById('statWeight').textContent = '—';
+
+  if (wWa.length) {
+    const last = wWa[0].waist;
+    document.getElementById('statWaist').textContent = last + ' cm';
+    if (wWa.length > 1) {
+      const diff = (last - wWa[1].waist).toFixed(1);
+      const sign = diff > 0 ? '+' : '';
+      const el = document.getElementById('statWaistDelta');
+      el.textContent = `${sign}${diff} cm`;
+      el.className = 'stat-delta ' + (diff > 0 ? 'up' : diff < 0 ? 'down' : 'same');
+    }
+  } else document.getElementById('statWaist').textContent = '—';
+
+  const h = savedHeight || (wW.length && wW[0].height) || null;
+  const latestW = wW.length ? wW[0].weight : null;
+  const b = calcBMI(latestW, h);
+  if (b) {
+    document.getElementById('statBMI').textContent = b;
+    const cat = bmiCat(b);
+    document.getElementById('statBMIBadge').innerHTML = `<span class="bmi-badge ${cat.cls}">${cat.label}</span>`;
+  }
+
+  // streak
+  const streak = calcStreak();
+  document.getElementById('streakBadge').textContent = `🔥 ${streak} ${streak===1?'dan':streak===2||streak===3||streak===4?'dni':'dni'}`;
+
+  // this week count
+  const weekAgo = Date.now() - 7*86400000;
+  const thisWeek = records.filter(r => new Date(r.isoDate) > weekAgo).length;
+  document.getElementById('statWeekly').textContent = `${thisWeek} ta teden`;
+}
+
+// ══════════════════════════════════════════════
+//  Goals progress
+// ══════════════════════════════════════════════
+function updateGoals() {
+  const wW  = records.filter(r => r.weight != null);
+  const wWa = records.filter(r => r.waist  != null);
+
+  function updateGoalBlock(current, goal, startKey, progressEl, leftEl, pctEl, etaEl, unit, kgPerDay) {
+    if (!goal || !current) {
+      document.getElementById(progressEl).style.width = '0%';
+      document.getElementById(leftEl).textContent = '—';
+      document.getElementById(pctEl).textContent = '—';
+      document.getElementById(etaEl).innerHTML = '';
+      return;
+    }
+    // start = first recorded value
+    const start = wW.length ? wW[wW.length-1].weight : current; // fallback
+    const total = Math.abs(start - goal);
+    const done  = Math.abs(current - goal);
+    const pct   = total > 0 ? Math.max(0, Math.min(100, Math.round((1 - done/total)*100))) : 100;
+    document.getElementById(progressEl).style.width = pct + '%';
+    const diff = (current - goal).toFixed(1);
+    const sign = diff > 0 ? '' : '';
+    document.getElementById(leftEl).textContent = done < 0.05 ? '🎯 Cilj dosežen!' : `Še ${Math.abs(diff)} ${unit}`;
+    document.getElementById(pctEl).textContent = pct + '%';
+    if (kgPerDay !== null)
+      document.getElementById(etaEl).innerHTML = etaText(current, goal, kgPerDay);
+  }
+
+  // regression for weight
+  let weightKpD = null, waistKpD = null;
+  if (wW.length >= 3) {
+    const pts = wW.map(r => ({ x: new Date(r.isoDate).getTime(), y: r.weight })).reverse();
+    const reg = linReg(pts);
+    if (reg) weightKpD = reg.m * 86400000; // kg per day
+  }
+  if (wWa.length >= 3) {
+    const pts = wWa.map(r => ({ x: new Date(r.isoDate).getTime(), y: r.waist })).reverse();
+    const reg = linReg(pts);
+    if (reg) waistKpD = reg.m * 86400000;
+  }
+
+  const curW  = wW.length  ? wW[0].weight  : null;
+  const curWa = wWa.length ? wWa[0].waist  : null;
+  const startW = wW.length  ? wW[wW.length-1].weight  : curW;
+  const startWa= wWa.length ? wWa[wWa.length-1].waist : curWa;
+
+  updateGoalBlock(curW,  goals.weight, startW,  'progressWeight', 'goalWeightLeft', 'goalWeightPct', 'goalWeightETA', 'kg', weightKpD);
+  updateGoalBlock(curWa, goals.waist,  startWa, 'progressWaist',  'goalWaistLeft',  'goalWaistPct',  'goalWaistETA',  'cm', waistKpD);
+}
+
+// ══════════════════════════════════════════════
+//  Weekly summary
+// ══════════════════════════════════════════════
+function updateWeekly() {
+  const now    = Date.now();
+  const weekMs = 7*86400000;
+  const thisWeekRecs = records.filter(r => now - new Date(r.isoDate) < weekMs);
+  const prevWeekRecs = records.filter(r => { const age = now - new Date(r.isoDate); return age >= weekMs && age < 2*weekMs; });
+
+  const avgW  = arr => arr.length ? (arr.reduce((s,v)=>s+v,0)/arr.length).toFixed(1) : null;
+  const twW   = thisWeekRecs.filter(r=>r.weight!=null).map(r=>r.weight);
+  const twWa  = thisWeekRecs.filter(r=>r.waist!=null).map(r=>r.waist);
+  const pwW   = prevWeekRecs.filter(r=>r.weight!=null).map(r=>r.weight);
+
+  document.getElementById('wAvgWeight').textContent = avgW(twW) ? avgW(twW)+' kg' : '—';
+  document.getElementById('wAvgWaist').textContent  = avgW(twWa) ? avgW(twWa)+' cm' : '—';
+  document.getElementById('wMinWeight').textContent = twW.length ? Math.min(...twW)+' kg' : '—';
+  document.getElementById('wMaxWeight').textContent = twW.length ? Math.max(...twW)+' kg' : '—';
+  document.getElementById('wCount').textContent     = thisWeekRecs.length;
+
+  const twAvg = avgW(twW), pwAvg = avgW(pwW);
+  if (twAvg && pwAvg) {
+    const diff = (parseFloat(twAvg) - parseFloat(pwAvg)).toFixed(1);
+    const sign = diff > 0 ? '+' : '';
+    const el = document.getElementById('wWeekDiff');
+    el.textContent = `${sign}${diff} kg`;
+    el.style.color = diff > 0 ? 'var(--danger)' : diff < 0 ? 'var(--accent)' : 'var(--muted)';
+  } else {
+    document.getElementById('wWeekDiff').textContent = '—';
+  }
+}
+
+// ══════════════════════════════════════════════
+//  History table
+// ══════════════════════════════════════════════
+function updateHistory() {
+  const tbody = document.getElementById('historyBody');
+  const empty = document.getElementById('emptyState');
+  if (!records.length) { tbody.innerHTML = ''; empty.style.display = 'block'; return; }
+  empty.style.display = 'none';
+  const h = savedHeight;
+  tbody.innerHTML = records.map(r => {
+    const rh = r.height || h;
+    const b  = calcBMI(r.weight, rh);
+    const bStr = b ? `<span class="bmi-badge ${bmiCat(b).cls}">${b}</span>` : '—';
+    return `<tr>
+      <td>${r.datetime}</td>
+      <td>${r.weight!=null ? r.weight+' kg' : '—'}</td>
+      <td>${r.waist !=null ? r.waist +' cm' : '—'}</td>
+      <td>${bStr}</td>
+      <td class="note-col">${r.note||''}</td>
+      <td><button class="del-btn" onclick="deleteRecord(${r.id})">✕</button></td>
+    </tr>`;
+  }).join('');
+}
+
+// ══════════════════════════════════════════════
+//  Reminders (Web Notifications + polling)
+// ══════════════════════════════════════════════
+const reminderTimeEl   = document.getElementById('reminderTime');
+const reminderToggleEl = document.getElementById('reminderToggle');
+const notifStatusEl    = document.getElementById('notifStatus');
+
+reminderTimeEl.value = reminder.time;
+if (reminder.on) reminderToggleEl.classList.add('on');
+
+function updateNotifStatus() {
+  const perm = Notification.permission;
+  if (perm === 'granted' && reminder.on)
+    notifStatusEl.textContent = `✓ Opomnik nastavljen ob ${reminder.time}`;
+  else if (perm === 'denied')
+    notifStatusEl.textContent = '✗ Obvestila blokirana v nastavitvah telefona.';
+  else if (!reminder.on)
+    notifStatusEl.textContent = 'Opomnik izklopljen.';
+  else
+    notifStatusEl.textContent = 'Dovoljenje za obvestila ni podeljeno.';
+}
+updateNotifStatus();
+
+reminderToggleEl.addEventListener('click', async () => {
+  if (!reminder.on) {
+    if (Notification.permission === 'default') {
+      const perm = await Notification.requestPermission();
+      if (perm !== 'granted') { updateNotifStatus(); return; }
+    }
+    if (Notification.permission !== 'granted') { updateNotifStatus(); return; }
+    reminder.on = true;
+    reminderToggleEl.classList.add('on');
+    showToast(`Opomnik nastavljen ob ${reminder.time}`);
+  } else {
+    reminder.on = false;
+    reminderToggleEl.classList.remove('on');
+  }
+  localStorage.setItem(RKEY, JSON.stringify(reminder));
+  updateNotifStatus();
+});
+
+reminderTimeEl.addEventListener('change', () => {
+  reminder.time = reminderTimeEl.value;
+  localStorage.setItem(RKEY, JSON.stringify(reminder));
+  updateNotifStatus();
+  if (reminder.on) showToast(`Opomnik posodobljen na ${reminder.time}`);
+});
+
+// Check every minute if reminder should fire
+setInterval(() => {
+  if (!reminder.on || Notification.permission !== 'granted') return;
+  const now = new Date();
+  const cur = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  if (cur !== reminder.time) return;
+  // Don't fire if already measured today
+  const today = now.toISOString().slice(0,10);
+  if (records.some(r => r.isoDate.slice(0,10) === today)) return;
+  new Notification('Teža & Pas 📊', { body: 'Ne pozabi na današnjo meritev!', icon: '' });
+}, 60000);
+
+// ══════════════════════════════════════════════
+//  Backup / Restore
+// ══════════════════════════════════════════════
+document.getElementById('btnExportJSON').addEventListener('click', () => {
+  const data = { records, height: savedHeight, goals, exportedAt: new Date().toISOString() };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url;
+  a.download = `teza-pas-backup-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('JSON izvožen!');
+});
+
+document.getElementById('btnExportCSV').addEventListener('click', () => {
+  const rows = [['Datum','Teža (kg)','Pas (cm)','BMI','Opomba']];
+  const h = savedHeight;
+  records.forEach(r => {
+    const rh = r.height || h;
+    const b  = calcBMI(r.weight, rh) || '';
+    rows.push([r.datetime, r.weight||'', r.waist||'', b, r.note||'']);
+  });
+  const csv  = rows.map(r => r.map(v => `"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const blob = new Blob(['\uFEFF'+csv], { type: 'text/csv;charset=utf-8' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href = url;
+  a.download = `teza-pas-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+  showToast('CSV izvožen!');
+});
+
+document.getElementById('btnImport').addEventListener('click', () => {
+  document.getElementById('fileInput').click();
+});
+
+document.getElementById('fileInput').addEventListener('change', e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const data = JSON.parse(ev.target.result);
+      if (!Array.isArray(data.records)) throw new Error('Napačen format');
+      if (!confirm(`Uvoziti ${data.records.length} meritev? Obstoječe se bodo ohranile.`)) return;
+      // merge, deduplicate by id
+      const existing = new Set(records.map(r=>r.id));
+      const newRecs  = data.records.filter(r => !existing.has(r.id));
+      records = [...records, ...newRecs].sort((a,b) => new Date(b.isoDate)-new Date(a.isoDate));
+      saveRecs(records);
+      if (data.height && !savedHeight) { savedHeight = data.height; localStorage.setItem(HKEY, savedHeight); inpHeight.value = savedHeight; }
+      render();
+      showToast(`Uvoženih ${newRecs.length} novih meritev`);
+    } catch(err) {
+      showToast('Napaka pri uvozu!', true);
+    }
+    e.target.value = '';
+  };
+  reader.readAsText(file);
+});
+
+document.getElementById('btnClearAll').addEventListener('click', () => {
+  if (!confirm('Res izbrisati VSE meritve? To je nepovrntljivo!')) return;
+  if (!confirm('Zadnjič: res izbrisati vse?')) return;
+  records = [];
+  saveRecs(records);
+  render();
+  showToast('Vse meritve izbrisane');
+});
+
+// ══════════════════════════════════════════════
+//  Collapsible sections
+// ══════════════════════════════════════════════
+const sections = [
+  ['goalsHeader',    'goalsBody',    true ],
+  ['weeklyHeader',   'weeklyBody',   false],
+  ['formHeader',     'formBody',     false],
+  ['reminderHeader', 'reminderBody', false],
+  ['backupHeader',   'backupBody',   false],
+];
+const collapseState = JSON.parse(localStorage.getItem('collapse_state') || '{}');
+
+sections.forEach(([hId, bId, defaultOpen]) => {
+  const h = document.getElementById(hId);
+  const b = document.getElementById(bId);
+  const key = hId;
+  const isOpen = key in collapseState ? collapseState[key] : defaultOpen;
+  if (isOpen) { b.classList.add('open'); h.classList.add('open'); }
+  h.addEventListener('click', () => {
+    const open = b.classList.toggle('open');
+    h.classList.toggle('open', open);
+    collapseState[key] = open;
+    localStorage.setItem('collapse_state', JSON.stringify(collapseState));
+  });
+});
+
+// ══════════════════════════════════════════════
+//  Master render
+// ══════════════════════════════════════════════
+function render() {
+  updateStats();
+  updateGoals();
+  updateWeekly();
+  updateChart();
+  updateHistory();
+}
+
+render();
+
+// ══════════════════════════════════════════════
+//  Service worker (offline support)
+// ══════════════════════════════════════════════
+if ('serviceWorker' in navigator) {
+  const sw = `
+const C='teza-v2';
+const A=['https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js'];
+self.addEventListener('install',e=>{e.waitUntil(caches.open(C).then(c=>c.addAll(A).catch(()=>{})));self.skipWaiting();});
+self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==C).map(k=>caches.delete(k)))));self.clients.claim();});
+self.addEventListener('fetch',e=>{e.respondWith(caches.match(e.request).then(r=>r||fetch(e.request).then(res=>{const cl=res.clone();caches.open(C).then(c=>c.put(e.request,cl));return res;}).catch(()=>r)));});`;
+  const blob = new Blob([sw], {type:'application/javascript'});
+  navigator.serviceWorker.register(URL.createObjectURL(blob)).catch(()=>{});
+}
+</script>
+</body>
+</html>
