@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Inventar"/>
+<meta name="theme-color" content="#0d1117"/>
+<title>Inventar doma</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:#0d1117;color:#e6edf3;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;min-height:100%}
+input,button,select,textarea{font-family:inherit;-webkit-appearance:none;appearance:none}
+input[type=number]{-moz-appearance:textfield}
+input[type=number]::-webkit-inner-spin-button,input[type=number]::-webkit-outer-spin-button{-webkit-appearance:none}
+
+#wrap{max-width:500px;margin:0 auto;
+  padding:calc(env(safe-area-inset-top,0px)+14px) 14px calc(env(safe-area-inset-bottom,0px)+50px)}
+
+/* header */
+.hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.hdr h1{font-size:21px;font-weight:700;letter-spacing:-0.02em}
+.hdr h1 span{color:#58a6ff}
+.hdr-btns{display:flex;gap:7px}
+.icon-btn{background:#161b22;border:1px solid #30363d;border-radius:8px;
+  padding:7px 11px;font-size:15px;cursor:pointer;color:#e6edf3}
+
+/* stats row */
+.stats-row{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:14px}
+.scard{background:#161b22;border:1px solid #30363d;border-radius:10px;padding:10px 12px;text-align:center}
+.scard-lbl{font-size:10px;color:#8b949e;margin-bottom:3px;text-transform:uppercase;letter-spacing:.06em}
+.scard-val{font-size:17px;font-family:ui-monospace,monospace;font-weight:600}
+
+/* search & filter */
+.search-wrap{position:sticky;top:calc(env(safe-area-inset-top,0px));z-index:10;
+  background:#0d1117;padding:8px 0;margin-bottom:10px}
+.search-inp{width:100%;background:#161b22;border:1px solid #30363d;border-radius:10px;
+  color:#e6edf3;font-size:16px;padding:10px 14px;outline:none}
+.search-inp:focus{border-color:#58a6ff}
+.rooms-row{display:flex;gap:6px;margin-top:8px;overflow-x:auto;padding-bottom:2px}
+.room-btn{background:none;border:1px solid #30363d;border-radius:20px;color:#8b949e;
+  font-size:12px;padding:5px 12px;cursor:pointer;white-space:nowrap;flex-shrink:0}
+.room-btn.active{background:#58a6ff;color:#000;border-color:#58a6ff}
+
+/* item cards */
+.item-card{background:#161b22;border:1px solid #30363d;border-radius:12px;
+  margin-bottom:8px;overflow:hidden}
+.item-card-top{display:flex;align-items:flex-start;gap:11px;padding:12px 13px}
+.item-thumb{width:48px;height:48px;border-radius:8px;object-fit:cover;
+  background:#0d1117;border:1px solid #30363d;flex-shrink:0;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:22px;overflow:hidden}
+.item-thumb img{width:100%;height:100%;object-fit:cover}
+.item-body{flex:1;min-width:0}
+.item-name{font-size:15px;font-weight:600;margin-bottom:3px}
+.item-meta{font-size:12px;color:#8b949e;line-height:1.5}
+.item-badges{display:flex;gap:5px;flex-wrap:wrap;margin-top:6px}
+.badge{font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;white-space:nowrap}
+.badge-ok{background:rgba(63,185,80,.15);color:#3fb950}
+.badge-warn{background:rgba(227,179,65,.15);color:#e3b341}
+.badge-exp{background:rgba(72,79,88,.2);color:#8b949e}
+.badge-blue{background:rgba(88,166,255,.15);color:#58a6ff}
+.item-card-foot{display:flex;border-top:1px solid #21262d}
+.item-foot-btn{flex:1;background:none;border:none;color:#8b949e;font-size:12px;
+  padding:9px 6px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:4px}
+.item-foot-btn:active{background:#21262d}
+.item-foot-btn.danger{color:#f85149}
+.item-foot-btn + .item-foot-btn{border-left:1px solid #21262d}
+
+/* warranty bar */
+.warr-bar-wrap{padding:0 13px 10px}
+.warr-bar-bg{height:4px;background:#0d1117;border-radius:2px;overflow:hidden;
+  border:1px solid #21262d;margin-bottom:4px}
+.warr-bar{height:100%;border-radius:2px;transition:width .4s}
+.warr-bar-lbl{font-size:10px;color:#8b949e;display:flex;justify-content:space-between}
+
+/* add/edit sheet */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:50;
+  display:none;align-items:flex-end;justify-content:center}
+.overlay.open{display:flex}
+.sheet{background:#161b22;border:1px solid #30363d;border-radius:16px 16px 0 0;
+  width:100%;max-width:500px;max-height:92vh;overflow-y:auto;
+  padding:20px 16px calc(env(safe-area-inset-bottom,0px)+20px)}
+.sheet h3{font-size:16px;font-weight:600;margin-bottom:16px}
+.form-group{margin-bottom:12px}
+.flbl{font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:.07em;margin-bottom:5px}
+.finp{width:100%;background:#0d1117;border:1px solid #30363d;border-radius:8px;
+  color:#e6edf3;font-size:16px;padding:9px 12px;outline:none}
+.finp:focus{border-color:#58a6ff}
+.finp-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.room-grid{display:flex;gap:6px;flex-wrap:wrap}
+.room-opt{background:#0d1117;border:1px solid #30363d;border-radius:8px;
+  padding:6px 12px;font-size:13px;cursor:pointer;color:#8b949e}
+.room-opt.sel{border-color:#58a6ff;color:#58a6ff}
+.cat-grid{display:flex;gap:6px;flex-wrap:wrap}
+.cat-opt{background:#0d1117;border:1px solid #30363d;border-radius:8px;
+  padding:6px 10px;font-size:13px;cursor:pointer;color:#8b949e}
+.cat-opt.sel{border-color:#58a6ff;color:#58a6ff}
+
+/* receipt upload */
+.receipt-area{border:1.5px dashed #30363d;border-radius:10px;padding:14px;
+  text-align:center;cursor:pointer;position:relative;transition:border-color .2s}
+.receipt-area:active{border-color:#58a6ff}
+.receipt-preview{width:100%;max-height:180px;object-fit:contain;border-radius:8px;
+  display:none;margin-bottom:8px}
+.receipt-lbl{font-size:13px;color:#8b949e}
+.receipt-hint{font-size:11px;color:#484f58;margin-top:3px}
+
+/* sheet buttons */
+.sheet-btns{display:flex;gap:8px;margin-top:16px}
+.sheet-cancel{flex:1;background:none;border:1px solid #30363d;border-radius:8px;
+  color:#8b949e;padding:11px;font-size:14px;cursor:pointer}
+.sheet-save{flex:2;background:#58a6ff;color:#000;border:none;border-radius:8px;
+  padding:11px;font-size:14px;font-weight:700;cursor:pointer}
+
+/* image viewer */
+.img-viewer{position:fixed;inset:0;background:#000;z-index:100;
+  display:none;flex-direction:column;align-items:center;justify-content:center}
+.img-viewer.open{display:flex}
+.img-viewer img{max-width:100%;max-height:90vh;object-fit:contain}
+.img-viewer-close{position:absolute;top:calc(env(safe-area-inset-top,0px)+14px);right:16px;
+  background:rgba(255,255,255,.15);border:none;color:#fff;border-radius:50%;
+  width:36px;height:36px;font-size:20px;cursor:pointer;display:flex;align-items:center;justify-content:center}
+
+/* backup sheet */
+.bkp-section{margin-bottom:16px}
+.bkp-title{font-size:11px;color:#8b949e;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px}
+.bkp-row{display:flex;gap:8px}
+.bkp-btn{flex:1;background:#0d1117;color:#e6edf3;border:1px solid #30363d;
+  border-radius:8px;padding:10px;font-size:13px;font-weight:600;cursor:pointer;text-align:center}
+.bkp-btn.primary{background:#58a6ff;color:#000;border-color:#58a6ff}
+.bkp-btn.danger{color:#f85149;border-color:rgba(248,81,73,.3)}
+.bkp-info{font-size:11px;color:#484f58;margin-top:8px;line-height:1.5}
+
+/* empty */
+.empty{text-align:center;padding:50px 20px;color:#484f58}
+.empty-icon{font-size:3rem;margin-bottom:10px}
+
+/* toast */
+.toast{position:fixed;bottom:calc(env(safe-area-inset-bottom,0px)+24px);left:50%;
+  transform:translateX(-50%);border-radius:30px;padding:10px 20px;font-size:13px;
+  font-weight:700;z-index:999;pointer-events:none;white-space:nowrap;opacity:0;transition:opacity .25s}
+.toast.show{opacity:1}
+.toast.ok{background:#58a6ff;color:#000}
+.toast.good{background:#3fb950;color:#000}
+.toast.err{background:#f85149;color:#fff}
+
+/* accordion */
+.acc-hdr{display:flex;align-items:center;justify-content:space-between;width:100%;
+  padding:14px 16px;background:none;border:none;color:#8b949e;font-size:11px;
+  font-weight:600;letter-spacing:.1em;text-transform:uppercase;cursor:pointer;text-align:left;
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
+</style>
+</head>
+<body>
+<div id="wrap">
+
+  <div class="hdr">
+    <h1>Inven<span>tar</span></h1>
+    <div class="hdr-btns">
+      <button class="icon-btn" onclick="openBackup()">💾</button>
+      <button class="icon-btn" onclick="openAdd()">＋</button>
+    </div>
+  </div>
+
+  <div class="stats-row">
+    <div class="scard">
+      <div class="scard-lbl">Predmetov</div>
+      <div class="scard-val" id="statCount">0</div>
+    </div>
+    <div class="scard">
+      <div class="scard-lbl">Vrednost</div>
+      <div class="scard-val" id="statValue">€0</div>
+    </div>
+    <div class="scard" id="statWarnCard">
+      <div class="scard-lbl">Garancije ⚠</div>
+      <div class="scard-val" id="statWarn" style="color:#e3b341">0</div>
+    </div>
+  </div>
+
+  <div class="search-wrap">
+    <input type="text" class="search-inp" id="searchInp" placeholder="Išči predmet…"
+      oninput="renderList()" autocomplete="off" autocorrect="off"/>
+    <div class="rooms-row" id="roomsRow"></div>
+  </div>
+
+  <div id="listEl"></div>
+</div>
+
+<!-- toast -->
+<div class="toast" id="toastEl"></div>
+
+<!-- add / edit sheet -->
+<div class="overlay" id="addOverlay" onclick="if(event.target===this)closeAdd()">
+  <div class="sheet">
+    <h3 id="sheetTitle">Nov predmet</h3>
+
+    <div class="form-group">
+      <div class="flbl">Naziv</div>
+      <input type="text" class="finp" id="fName" placeholder="npr. Samsung TV 55&quot;"/>
+    </div>
+
+    <div class="form-group">
+      <div class="flbl">Soba</div>
+      <div class="room-grid" id="fRoomGrid"></div>
+    </div>
+
+    <div class="form-group">
+      <div class="flbl">Kategorija</div>
+      <div class="cat-grid" id="fCatGrid"></div>
+    </div>
+
+    <div class="finp-row form-group">
+      <div>
+        <div class="flbl">Cena (€)</div>
+        <input type="number" class="finp" id="fPrice" placeholder="0" step="0.01" inputmode="decimal"/>
+      </div>
+      <div>
+        <div class="flbl">Prodajalna</div>
+        <input type="text" class="finp" id="fStore" placeholder="npr. Merkur"/>
+      </div>
+    </div>
+
+    <div class="finp-row form-group">
+      <div>
+        <div class="flbl">Datum nakupa</div>
+        <input type="date" class="finp" id="fBought"/>
+      </div>
+      <div>
+        <div class="flbl">Konec garancije</div>
+        <input type="date" class="finp" id="fWarranty"/>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <div class="flbl">Serijska številka</div>
+      <input type="text" class="finp" id="fSerial" placeholder="neobvezno" autocomplete="off" autocorrect="off"/>
+    </div>
+
+    <div class="form-group">
+      <div class="flbl">Opomba</div>
+      <input type="text" class="finp" id="fNote" placeholder="neobvezno"/>
+    </div>
+
+    <div class="form-group">
+      <div class="flbl">Račun (foto)</div>
+      <div class="receipt-area" id="receiptArea" onclick="document.getElementById('receiptFile').click()">
+        <img id="receiptPreview" class="receipt-preview"/>
+        <div class="receipt-lbl" id="receiptLbl">📷 Fotografiraj ali naloži račun</div>
+        <div class="receipt-hint">Tapni za kamero ali galerijo</div>
+      </div>
+      <input type="file" id="receiptFile" accept="image/*" capture="environment"
+        style="display:none" onchange="onReceiptPick(this)"/>
+      <button id="receiptClearBtn" style="display:none;margin-top:6px;background:none;
+        border:1px solid rgba(248,81,73,.3);color:#f85149;border-radius:6px;
+        padding:5px 12px;font-size:12px;cursor:pointer;width:100%" onclick="clearReceipt()">
+        Odstrani sliko
+      </button>
+    </div>
+
+    <div class="sheet-btns">
+      <button class="sheet-cancel" onclick="closeAdd()">Prekliči</button>
+      <button class="sheet-save" onclick="saveItem()">Shrani</button>
+    </div>
+  </div>
+</div>
+
+<!-- image viewer -->
+<div class="img-viewer" id="imgViewer">
+  <button class="img-viewer-close" onclick="closeViewer()">✕</button>
+  <img id="viewerImg" src=""/>
+</div>
+
+<!-- backup sheet -->
+<div class="overlay" id="backupOverlay" onclick="if(event.target===this)closeBackup()">
+  <div class="sheet">
+    <h3>Varnostna kopija</h3>
+
+    <div class="bkp-section">
+      <div class="bkp-title">Izvoz</div>
+      <div style="font-size:13px;color:#8b949e;margin-bottom:10px;line-height:1.6">
+        Izvozi vse predmete skupaj s slikami računov kot eno datoteko. Na novem telefonu jo uvozi nazaj.
+      </div>
+      <div class="bkp-row">
+        <button class="bkp-btn primary" onclick="exportBackup()">📦 Izvozi vse (z računi)</button>
+      </div>
+      <div class="bkp-info" id="lastBackupInfo">Zadnji izvoz: nikoli</div>
+    </div>
+
+    <div class="bkp-section">
+      <div class="bkp-title">Uvoz</div>
+      <div style="font-size:13px;color:#8b949e;margin-bottom:10px;line-height:1.6">
+        Uvozi backup datoteko. Obstoječi predmeti se ohranijo, dodajo se samo novi.
+      </div>
+      <div class="bkp-row">
+        <button class="bkp-btn" onclick="document.getElementById('importFile').click()">📥 Uvozi backup</button>
+      </div>
+      <input type="file" id="importFile" accept=".json" style="display:none" onchange="importBackup(this)"/>
+    </div>
+
+    <div class="bkp-section">
+      <div class="bkp-title">Nevarno</div>
+      <div class="bkp-row">
+        <button class="bkp-btn danger" onclick="clearAllData()">🗑 Izbriši vse podatke</button>
+      </div>
+    </div>
+
+    <button class="sheet-cancel" style="width:100%;margin-top:4px" onclick="closeBackup()">Zapri</button>
+  </div>
+</div>
+
+<script>
+// ── rooms & categories ────────────────────────────────────────────
+const ROOMS=['🏠 Vse','🛋 Dnevna','🛏 Spalnica','🍳 Kuhinja','🚿 Kopalnica','🔧 Klet','🚗 Garaža','🌿 Vrt','📦 Ostalo'];
+const CATS=[
+  {id:'electronics',e:'📺',n:'Elektronika'},
+  {id:'appliance',  e:'🫧',n:'Bela tehnika'},
+  {id:'furniture',  e:'🪑',n:'Pohištvo'},
+  {id:'tools',      e:'🔧',n:'Orodja'},
+  {id:'heating',    e:'🔥',n:'Ogrevanje'},
+  {id:'security',   e:'🔒',n:'Varnost'},
+  {id:'garden',     e:'🌿',n:'Vrt'},
+  {id:'other',      e:'📦',n:'Ostalo'},
+];
+
+// ── IndexedDB setup ───────────────────────────────────────────────
+let db = null;
+const DB_NAME='inventar_db', DB_VER=1, STORE='items';
+
+function openDB(){
+  return new Promise((res,rej)=>{
+    const req=indexedDB.open(DB_NAME,DB_VER);
+    req.onupgradeneeded=e=>{
+      const d=e.target.result;
+      if(!d.objectStoreNames.contains(STORE))
+        d.createObjectStore(STORE,{keyPath:'id'});
+    };
+    req.onsuccess=e=>{db=e.target.result;res(db);};
+    req.onerror=e=>rej(e);
+  });
+}
+function dbGetAll(){
+  return new Promise((res,rej)=>{
+    const tx=db.transaction(STORE,'readonly');
+    const req=tx.objectStore(STORE).getAll();
+    req.onsuccess=e=>res(e.target.result);
+    req.onerror=e=>rej(e);
+  });
+}
+function dbPut(item){
+  return new Promise((res,rej)=>{
+    const tx=db.transaction(STORE,'readwrite');
+    const req=tx.objectStore(STORE).put(item);
+    req.onsuccess=e=>res(e.target.result);
+    req.onerror=e=>rej(e);
+  });
+}
+function dbDelete(id){
+  return new Promise((res,rej)=>{
+    const tx=db.transaction(STORE,'readwrite');
+    const req=tx.objectStore(STORE).delete(id);
+    req.onsuccess=e=>res();
+    req.onerror=e=>rej(e);
+  });
+}
+
+// ── state ─────────────────────────────────────────────────────────
+let items=[];
+let selRoom='🏠 Vse';
+let editId=null;
+let tempReceipt=null; // base64 during editing
+
+function ls(k,v){try{localStorage.setItem(k,JSON.stringify(v));}catch{}}
+function lg(k,d){try{const v=localStorage.getItem(k);return v!=null?JSON.parse(v):d;}catch{return d;}}
+
+// ── toast ─────────────────────────────────────────────────────────
+let toastT=null;
+function toast(msg,type='ok'){
+  const el=document.getElementById('toastEl');
+  el.textContent=msg;el.className=`toast show ${type}`;
+  if(toastT)clearTimeout(toastT);
+  toastT=setTimeout(()=>el.classList.remove('show'),2400);
+}
+
+// ── warranty helpers ──────────────────────────────────────────────
+function warrantyStatus(dateStr){
+  if(!dateStr) return null;
+  const exp=new Date(dateStr), now=new Date();
+  now.setHours(0,0,0,0);
+  const diffMs=exp-now, diffDays=Math.ceil(diffMs/864e5);
+  if(diffDays<0) return{label:'Potekla',cls:'badge-exp',days:diffDays};
+  if(diffDays<=30) return{label:`Poteče čez ${diffDays} dni`,cls:'badge-warn',days:diffDays};
+  return{label:'V garanciji',cls:'badge-ok',days:diffDays};
+}
+function warrantyPct(boughtStr,warrantyStr){
+  if(!boughtStr||!warrantyStr) return 0;
+  const b=new Date(boughtStr),w=new Date(warrantyStr),now=new Date();
+  const total=w-b, elapsed=now-b;
+  return Math.max(0,Math.min(100,Math.round((1-elapsed/total)*100)));
+}
+
+// ── render rooms ──────────────────────────────────────────────────
+function renderRooms(){
+  document.getElementById('roomsRow').innerHTML=ROOMS.map(r=>
+    `<button class="room-btn${selRoom===r?' active':''}" onclick="setRoom('${r}')">${r}</button>`
+  ).join('');
+}
+function setRoom(r){selRoom=r;renderRooms();renderList();}
+
+// ── render list ───────────────────────────────────────────────────
+function renderList(){
+  const el=document.getElementById('listEl');
+  const q=document.getElementById('searchInp').value.trim().toLowerCase();
+  let filtered=items.filter(it=>{
+    if(selRoom!=='🏠 Vse'&&it.room!==selRoom) return false;
+    if(q&&!it.name.toLowerCase().includes(q)&&!(it.note||'').toLowerCase().includes(q)) return false;
+    return true;
+  });
+  // sort: warranty expiring soonest first, then by name
+  filtered.sort((a,b)=>{
+    const wa=warrantyStatus(a.warranty), wb=warrantyStatus(b.warranty);
+    const da=wa?wa.days:99999, db2=wb?wb.days:99999;
+    if(da!==db2) return da-db2;
+    return a.name.localeCompare(b.name,'sl');
+  });
+
+  if(!filtered.length){
+    el.innerHTML=`<div class="empty"><div class="empty-icon">🏠</div><div>${items.length?'Ni rezultatov.':'Dodaj prvi predmet z gumbom ＋'}</div></div>`;
+    return;
+  }
+
+  el.innerHTML=filtered.map(it=>{
+    const ws=warrantyStatus(it.warranty);
+    const cat=CATS.find(c=>c.id===it.cat)||CATS[CATS.length-1];
+    const wpct=warrantyPct(it.bought,it.warranty);
+    const wcolor=ws?(ws.days<0?'#484f58':ws.days<=30?'#e3b341':'#3fb950'):'#484f58';
+
+    const thumbHtml=it.receiptThumb
+      ? `<div class="item-thumb" onclick="viewReceipt(${it.id})"><img src="${it.receiptThumb}" alt="Račun"/></div>`
+      : `<div class="item-thumb" onclick="openAdd(${it.id})" style="color:#484f58">${cat.e}</div>`;
+
+    return `<div class="item-card">
+      <div class="item-card-top">
+        ${thumbHtml}
+        <div class="item-body">
+          <div class="item-name">${it.name}</div>
+          <div class="item-meta">
+            ${it.room||''}${it.price?` · €${parseFloat(it.price).toFixed(2)}`:''}${it.store?' · '+it.store:''}
+            ${it.bought?`<br>Kupljeno: ${new Date(it.bought).toLocaleDateString('sl-SI')}`:''}
+            ${it.serial?`<br>S/N: ${it.serial}`:''}
+          </div>
+          <div class="item-badges">
+            <span class="badge badge-blue">${cat.e} ${cat.n}</span>
+            ${ws?`<span class="badge ${ws.cls}">${ws.label}</span>`:''}
+            ${it.receiptThumb?`<span class="badge badge-blue">📄 Račun</span>`:''}
+          </div>
+        </div>
+      </div>
+      ${ws&&it.bought&&it.warranty?`
+      <div class="warr-bar-wrap">
+        <div class="warr-bar-bg"><div class="warr-bar" style="width:${wpct}%;background:${wcolor}"></div></div>
+        <div class="warr-bar-lbl">
+          <span>Garancija</span>
+          <span>${new Date(it.warranty).toLocaleDateString('sl-SI')}</span>
+        </div>
+      </div>`:''}
+      <div class="item-card-foot">
+        ${it.receiptThumb?`<button class="item-foot-btn" onclick="viewReceipt(${it.id})">📄 Račun</button>`:''}
+        <button class="item-foot-btn" onclick="openAdd(${it.id})">✏️ Uredi</button>
+        <button class="item-foot-btn danger" onclick="deleteItem(${it.id})">✕ Izbriši</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── stats ─────────────────────────────────────────────────────────
+function renderStats(){
+  const total=items.reduce((s,i)=>s+(parseFloat(i.price)||0),0);
+  const warn=items.filter(i=>{const ws=warrantyStatus(i.warranty);return ws&&ws.days>=0&&ws.days<=30;}).length;
+  document.getElementById('statCount').textContent=items.length;
+  document.getElementById('statValue').textContent=total>0?'€'+total.toFixed(0):'€0';
+  document.getElementById('statWarn').textContent=warn;
+  document.getElementById('statWarnCard').style.opacity=warn?'1':'0.5';
+}
+
+// ── add / edit sheet ──────────────────────────────────────────────
+let fRoom='🛋 Dnevna', fCat='electronics';
+
+function renderFormRooms(){
+  document.getElementById('fRoomGrid').innerHTML=ROOMS.filter(r=>r!=='🏠 Vse').map(r=>
+    `<button class="room-opt${fRoom===r?' sel':''}" onclick="fRoom='${r}';renderFormRooms()">${r}</button>`
+  ).join('');
+}
+function renderFormCats(){
+  document.getElementById('fCatGrid').innerHTML=CATS.map(c=>
+    `<button class="cat-opt${fCat===c.id?' sel':''}" onclick="fCat='${c.id}';renderFormCats()">${c.e} ${c.n}</button>`
+  ).join('');
+}
+
+function openAdd(id){
+  editId=id||null;
+  tempReceipt=null;
+  clearReceiptUI();
+  document.getElementById('sheetTitle').textContent=id?'Uredi predmet':'Nov predmet';
+  if(id){
+    const it=items.find(i=>i.id===id);
+    if(!it)return;
+    document.getElementById('fName').value=it.name||'';
+    document.getElementById('fPrice').value=it.price||'';
+    document.getElementById('fStore').value=it.store||'';
+    document.getElementById('fBought').value=it.bought||'';
+    document.getElementById('fWarranty').value=it.warranty||'';
+    document.getElementById('fSerial').value=it.serial||'';
+    document.getElementById('fNote').value=it.note||'';
+    fRoom=it.room||'🛋 Dnevna';
+    fCat=it.cat||'other';
+    if(it.receiptThumb){
+      document.getElementById('receiptPreview').src=it.receiptThumb;
+      document.getElementById('receiptPreview').style.display='block';
+      document.getElementById('receiptLbl').textContent='📄 Račun naložen';
+      document.getElementById('receiptClearBtn').style.display='block';
+      tempReceipt=it.receiptThumb;
+    }
+  } else {
+    document.getElementById('fName').value='';
+    document.getElementById('fPrice').value='';
+    document.getElementById('fStore').value='';
+    document.getElementById('fBought').value=new Date().toISOString().slice(0,10);
+    document.getElementById('fWarranty').value='';
+    document.getElementById('fSerial').value='';
+    document.getElementById('fNote').value='';
+    fRoom='🛋 Dnevna'; fCat='electronics';
+  }
+  renderFormRooms();renderFormCats();
+  document.getElementById('addOverlay').classList.add('open');
+}
+function closeAdd(){document.getElementById('addOverlay').classList.remove('open');}
+
+// ── receipt handling ──────────────────────────────────────────────
+function onReceiptPick(inp){
+  const file=inp.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    // compress image
+    const img=new Image();
+    img.onload=()=>{
+      const canvas=document.createElement('canvas');
+      const MAX=1200;
+      let w=img.width,h=img.height;
+      if(w>MAX){h=Math.round(h*MAX/w);w=MAX;}
+      if(h>MAX){w=Math.round(w*MAX/h);h=MAX;}
+      canvas.width=w;canvas.height=h;
+      canvas.getContext('2d').drawImage(img,0,0,w,h);
+      tempReceipt=canvas.toDataURL('image/jpeg',0.7);
+      document.getElementById('receiptPreview').src=tempReceipt;
+      document.getElementById('receiptPreview').style.display='block';
+      document.getElementById('receiptLbl').textContent='📄 Račun naložen';
+      document.getElementById('receiptClearBtn').style.display='block';
+    };
+    img.src=e.target.result;
+  };
+  reader.readAsDataURL(file);
+  inp.value='';
+}
+function clearReceipt(){
+  tempReceipt=null;
+  clearReceiptUI();
+}
+function clearReceiptUI(){
+  document.getElementById('receiptPreview').src='';
+  document.getElementById('receiptPreview').style.display='none';
+  document.getElementById('receiptLbl').textContent='📷 Fotografiraj ali naloži račun';
+  document.getElementById('receiptClearBtn').style.display='none';
+}
+
+// ── save item ─────────────────────────────────────────────────────
+async function saveItem(){
+  const name=document.getElementById('fName').value.trim();
+  if(!name){toast('Vnesi naziv','err');return;}
+  const item={
+    id:editId||Date.now(),
+    name,
+    room:fRoom,
+    cat:fCat,
+    price:document.getElementById('fPrice').value,
+    store:document.getElementById('fStore').value.trim(),
+    bought:document.getElementById('fBought').value,
+    warranty:document.getElementById('fWarranty').value,
+    serial:document.getElementById('fSerial').value.trim(),
+    note:document.getElementById('fNote').value.trim(),
+    receiptThumb:tempReceipt||null,
+    updatedAt:Date.now()
+  };
+  await dbPut(item);
+  if(editId) items=items.map(i=>i.id===editId?item:i);
+  else items.unshift(item);
+  closeAdd();
+  renderStats();renderList();
+  toast(editId?'Predmet posodobljen':'Predmet dodan','good');
+}
+
+// ── delete ────────────────────────────────────────────────────────
+async function deleteItem(id){
+  if(!confirm('Izbrisati ta predmet?'))return;
+  await dbDelete(id);
+  items=items.filter(i=>i.id!==id);
+  renderStats();renderList();
+  toast('Predmet izbrisan','ok');
+}
+
+// ── view receipt ──────────────────────────────────────────────────
+function viewReceipt(id){
+  const it=items.find(i=>i.id===id);
+  if(!it||!it.receiptThumb)return;
+  document.getElementById('viewerImg').src=it.receiptThumb;
+  document.getElementById('imgViewer').classList.add('open');
+}
+function closeViewer(){
+  document.getElementById('imgViewer').classList.remove('open');
+  document.getElementById('viewerImg').src='';
+}
+
+// ── backup ────────────────────────────────────────────────────────
+function openBackup(){
+  const last=lg('inv_last_backup',null);
+  document.getElementById('lastBackupInfo').textContent=
+    last?`Zadnji izvoz: ${new Date(last).toLocaleString('sl-SI')}`:'Zadnji izvoz: nikoli';
+  document.getElementById('backupOverlay').classList.add('open');
+}
+function closeBackup(){document.getElementById('backupOverlay').classList.remove('open');}
+
+async function exportBackup(){
+  const data={version:2,exportedAt:new Date().toISOString(),items};
+  const json=JSON.stringify(data);
+  const blob=new Blob([json],{type:'application/json'});
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(blob);
+  a.download=`inventar-backup-${new Date().toISOString().slice(0,10)}.json`;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  ls('inv_last_backup',Date.now());
+  document.getElementById('lastBackupInfo').textContent=`Zadnji izvoz: ${new Date().toLocaleString('sl-SI')}`;
+  toast(`Izvoženih ${items.length} predmetov 📦`,'good');
+}
+
+function importBackup(inp){
+  const file=inp.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=async e=>{
+    try{
+      const data=JSON.parse(e.target.result);
+      if(!Array.isArray(data.items))throw new Error('Napačen format');
+      const existing=new Set(items.map(i=>i.id));
+      const newItems=data.items.filter(i=>!existing.has(i.id));
+      if(!confirm(`Uvoziti ${newItems.length} novih predmetov?\n(${data.items.length-newItems.length} že obstaja in bo preskočenih)`))return;
+      for(const it of newItems){await dbPut(it);items.push(it);}
+      renderStats();renderList();
+      toast(`Uvoženih ${newItems.length} predmetov`,'good');
+    }catch(err){toast('Napaka: '+err.message,'err');}
+    inp.value='';
+  };
+  reader.readAsText(file);
+}
+
+async function clearAllData(){
+  if(!confirm('Izbrisati VSE podatke?'))return;
+  if(!confirm('Potrdi: res vse?'))return;
+  for(const it of items)await dbDelete(it.id);
+  items=[];renderStats();renderList();closeBackup();
+  toast('Vsi podatki izbrisani');
+}
+
+// ── init ──────────────────────────────────────────────────────────
+async function init(){
+  await openDB();
+  items=await dbGetAll();
+  items.sort((a,b)=>( b.updatedAt||0)-(a.updatedAt||0));
+  renderRooms();
+  renderStats();
+  renderList();
+}
+init();
+</script>
+</body>
+</html>
