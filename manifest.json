@@ -1,0 +1,10 @@
+{
+  "name": "MacroAI V3",
+  "short_name": "MacroAI",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#090b10",
+  "theme_color": "#090b10",
+  "lang": "sl",
+  "description": "Osebni AI sledilnik kalorij in makrohranil z Gemini Interactions API"
+}
