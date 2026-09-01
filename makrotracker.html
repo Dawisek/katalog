@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="sl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <title>Makro Tracker Pro (Gemini AI)</title>
+
+  <style>
+    :root {
+      --bg: #0b0f19;
+      --card: #161f30;
+      --card-inner: #1f2c42;
+      --accent: #38bdf8;
+      --accent-p: #ec4899;
+      --accent-f: #eab308;
+      --accent-c: #10b981;
+      --text: #f8fafc;
+      --muted: #94a3b8;
+      --border: #2d3b55;
+      --danger: #ef4444;
+    }
+    * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, sans-serif; margin: 0; padding: 0; }
+    body { background-color: var(--bg); color: var(--text); padding: 16px; padding-bottom: 90px; }
+    
+    header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+    h1 { font-size: 1.25rem; font-weight: 700; }
+    .date-nav input { background: var(--card); border: 1px solid var(--border); color: var(--text); padding: 6px 10px; border-radius: 8px; font-size: 0.85rem; }
+
+    .card { background: var(--card); border-radius: 16px; padding: 16px; margin-bottom: 14px; border: 1px solid var(--border); }
+    .card-title { font-size: 0.9rem; font-weight: 600; color: var(--muted); margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
+
+    .macro-progress-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-top: 10px; }
+    .prog-box { background: var(--card-inner); padding: 10px; border-radius: 10px; }
+    .prog-header { display: flex; justify-content: space-between; font-size: 0.75rem; margin-bottom: 6px; }
+    .bar-bg { background: rgba(255,255,255,0.08); height: 6px; border-radius: 3px; overflow: hidden; }
+    .bar-fill { height: 100%; border-radius: 3px; transition: width 0.3s ease; }
+    .fill-kcal { background: var(--accent); }
+    .fill-p { background: var(--accent-p); }
+    .fill-f { background: var(--accent-f); }
+    .fill-c { background: var(--accent-c); }
+
+    .row { display: flex; gap: 8px; margin-bottom: 8px; }
+    input, select, textarea, button {
+      background: var(--card-inner); border: 1px solid var(--border); color: var(--text);
+      padding: 10px; border-radius: 10px; font-size: 0.9rem; outline: none; width: 100%;
+    }
+    button { cursor: pointer; font-weight: 600; }
+    .btn-primary { background: var(--accent); color: #0b0f19; border: none; }
+    .btn-secondary { background: transparent; border: 1px solid var(--border); color: var(--muted); font-size: 0.8rem; padding: 6px 10px; border-radius: 6px; width: auto; }
+    .btn-cam { background: #334155; color: var(--accent); border: 1px dashed var(--accent); display: flex; align-items: center; justify-content: center; gap: 6px; padding: 14px; border-radius: 10px; }
+
+    .item-list { margin-top: 10px; }
+    .meal-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); }
+    .meal-item:last-child { border-bottom: none; }
+    .item-name { font-weight: 600; font-size: 0.9rem; }
+    .item-sub { font-size: 0.75rem; color: var(--muted); margin-top: 2px; }
+    .btn-del { color: var(--danger); background: transparent; border: none; font-size: 1.2rem; padding: 4px 8px; width: auto; }
+
+    .tab-nav { display: flex; gap: 6px; margin-bottom: 12px; border-bottom: 1px solid var(--border); }
+    .tab-btn { background: none; border: none; color: var(--muted); padding: 8px 12px; font-size: 0.85rem; }
+    .tab-btn.active { color: var(--accent); border-bottom: 2px solid var(--accent); font-weight: 600; }
+    .hidden { display: none; }
+    #scan-status { font-size: 0.85rem; color: var(--accent); text-align: center; margin-top: 10px; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>🔥 Makro Tracker</h1>
+    <div class="date-nav">
+      <input type="date" id="current-date" onchange="changeDate()">
+    </div>
+  </header>
+
+  <!-- Povzetek & Cilji -->
+  <div class="card">
+    <div class="card-title">
+      <span>DNEVNI CILJI</span>
+      <button class="btn-secondary" onclick="toggleElement('goals-modal')">Uredi cilje</button>
+    </div>
+    
+    <div class="macro-progress-grid">
+      <div class="prog-box">
+        <div class="prog-header"><span>Kalorije</span><span id="txt-kcal">0 / 2000</span></div>
+        <div class="bar-bg"><div class="bar-fill fill-kcal" id="bar-kcal" style="width: 0%"></div></div>
+      </div>
+      <div class="prog-box">
+        <div class="prog-header"><span>Beljakovine</span><span id="txt-p">0 / 150g</span></div>
+        <div class="bar-bg"><div class="bar-fill fill-p" id="bar-p" style="width: 0%"></div></div>
+      </div>
+      <div class="prog-box">
+        <div class="prog-header"><span>Maščobe</span><span id="txt-f">0 / 70g</span></div>
+        <div class="bar-bg"><div class="bar-fill fill-f" id="bar-f" style="width: 0%"></div></div>
+      </div>
+      <div class="prog-box">
+        <div class="prog-header"><span>Neto OH</span><span id="txt-c">0 / 50g</span></div>
+        <div class="bar-bg"><div class="bar-fill fill-c" id="bar-c" style="width: 0%"></div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Urejanje ciljev -->
+  <div id="goals-modal" class="card hidden">
+    <div class="card-title">Nastavi dnevne cilje</div>
+    <div class="row">
+      <input type="number" id="goal-kcal" placeholder="Kcal">
+      <input type="number" id="goal-p" placeholder="Beljakovine (g)">
+    </div>
+    <div class="row">
+      <input type="number" id="goal-f" placeholder="Maščobe (g)">
+      <input type="number" id="goal-c" placeholder="Neto OH (g)">
+    </div>
+    <button class="btn-primary" onclick="saveGoals()">Shrani cilje</button>
+  </div>
+
+  <!-- Vnosni meni -->
+  <div class="card">
+    <div class="tab-nav">
+      <button class="tab-btn active" id="tab-gemini-btn" onclick="switchTab('gemini')">✨ Gemini AI vnos</button>
+      <button class="tab-btn" id="tab-scan-btn" onclick="switchTab('scan')">📸 Slikaj embalažo</button>
+      <button class="tab-btn" id="tab-db-btn" onclick="switchTab('db')">Baza živil</button>
+    </div>
+
+    <!-- Zavihek: Gemini AI Tekstovni vnos -->
+    <div id="tab-gemini">
+      <div class="row">
+        <input type="text" id="gemini-input" placeholder="npr. 200g cottage, 80g slanine in 3 jajca">
+        <button class="btn-primary" style="width: auto; padding: 0 16px;" onclick="handleGeminiTextInput()">Dodaj</button>
+      </div>
+      <p style="font-size: 0.75rem; color: var(--muted);">Lahko vpišeš posamezno živilo ali celoten sestavljen obrok naenkrat.</p>
+    </div>
+
+    <!-- Zavihek: Skeniranje embalaže -->
+    <div id="tab-scan" class="hidden">
+      <input type="file" id="camera-input" accept="image/*" capture="environment" style="display: none;" onchange="handleGeminiVision(event)">
+      <button class="btn-cam" onclick="document.getElementById('camera-input').click()">
+        📷 Slikaj tabelo s hranilnimi vrednostmi
+      </button>
+    </div>
+
+    <!-- Zavihek: Baza živil -->
+    <div id="tab-db" class="hidden">
+      <div class="row">
+        <select id="db-select" style="flex: 2;"></select>
+        <input type="number" id="db-amount" placeholder="g / kos" style="flex: 1;">
+        <button class="btn-primary" style="width: auto;" onclick="addFromDb()">+</button>
+      </div>
+    </div>
+
+    <div id="scan-status" class="hidden"></div>
+  </div>
+
+  <!-- Seznam živil -->
+  <div class="card">
+    <div class="card-title">DODANA ŽIVILA ZA TA DAN</div>
+    <div id="meal-list" class="item-list"></div>
+  </div>
+
+  <!-- Gemini API Ključ -->
+  <div class="card">
+    <div class="card-title">
+      <span>⚙️ GEMINI API NASTAVITVE</span>
+      <button class="btn-secondary" onclick="toggleElement('api-settings')">Odpri</button>
+    </div>
+    <div id="api-settings" class="hidden">
+      <p style="font-size:0.75rem; color:var(--muted); margin-bottom:8px;">
+        Vnesi svoj brezplačni Google Gemini API ključ (iz <a href="https://aistudio.google.com/" target="_blank" style="color:var(--accent);">Google AI Studio</a>):
+      </p>
+      <input type="password" id="gemini-key" placeholder="AIzaSy..." style="margin-bottom:8px;">
+      <button class="btn-primary" onclick="saveApiKey()">Shrani Gemini ključ</button>
+    </div>
+  </div>
+
+  <script>
+    // Privzeta baza živil
+    const defaultFoods = [
+      { id: 'cottage', name: 'Cottage sir (Lidl)', per: 100, kcal: 90, p: 12.0, f: 4.0, c: 1.6, fib: 0, unit: 'g' },
+      { id: 'bacon', name: 'Slanina (Lidl)', per: 100, kcal: 363, p: 12.0, f: 35.0, c: 0.0, fib: 0, unit: 'g' },
+      { id: 'butter', name: 'Maslo', per: 100, kcal: 743, p: 0.7, f: 82.0, c: 0.7, fib: 0, unit: 'g' },
+      { id: 'egg', name: 'Jajce (M)', per: 1, kcal: 72, p: 6.3, f: 4.8, c: 0.4, fib: 0, unit: 'kos' },
+      { id: 'whey', name: 'Whey beljakovine', per: 100, kcal: 370, p: 65.0, f: 6.8, c: 6.9, fib: 10.0, unit: 'g' },
+      { id: 'meat', name: 'Mleto meso (Lidl)', per: 100, kcal: 237, p: 17.7, f: 18.3, c: 1.1, fib: 0, unit: 'g' },
+      { id: 'tomato', name: 'Paradižnik', per: 100, kcal: 18, p: 0.9, f: 0.2, c: 3.9, fib: 1.2, unit: 'g' }
+    ];
+
+    let goals = JSON.parse(localStorage.getItem('userGoals') || '{"kcal": 2000, "p": 150, "f": 70, "c": 50}');
+    let selectedDate = new Date().toISOString().split('T')[0];
+
+    function init() {
+      document.getElementById('current-date').value = selectedDate;
+      document.getElementById('goal-kcal').value = goals.kcal;
+      document.getElementById('goal-p').value = goals.p;
+      document.getElementById('goal-f').value = goals.f;
+      document.getElementById('goal-c').value = goals.c;
+      
+      const savedKey = localStorage.getItem('gemini_api_key');
+      if (savedKey) document.getElementById('gemini-key').value = savedKey;
+
+      populateDbSelect();
+      render();
+    }
+
+    function populateDbSelect() {
+      const select = document.getElementById('db-select');
+      select.innerHTML = '';
+      defaultFoods.forEach(f => {
+        const opt = document.createElement('option');
+        opt.value = f.id;
+        opt.textContent = `${f.name} (${f.unit})`;
+        select.appendChild(opt);
+      });
+    }
+
+    function getDayLog(date) {
+      return JSON.parse(localStorage.getItem(`log_${date}`) || '[]');
+    }
+
+    function saveDayLog(date, log) {
+      localStorage.setItem(`log_${date}`, JSON.stringify(log));
+      render();
+    }
+
+    function changeDate() {
+      selectedDate = document.getElementById('current-date').value;
+      render();
+    }
+
+    /* 1. GEMINI AI: TEKSTOVNI IZRAČUN (POSODOBAN MODEL 3.6-FLASH) */
+    async function handleGeminiTextInput() {
+      const text = document.getElementById('gemini-input').value.trim();
+      if (!text) return;
+
+      const apiKey = localStorage.getItem('gemini_api_key');
+      if (!apiKey) {
+        alert("Najprej vpiši svoj brezplačni Gemini API ključ spodaj v nastavitvah!");
+        document.getElementById('api-settings').classList.remove('hidden');
+        document.getElementById('gemini-key').focus();
+        return;
+      }
+
+      showStatus("✨ Gemini računa makrohranila...");
+
+      try {
+        const prompt = `Analiziraj naslednji vnos hrane in izračunaj makrohranila: "${text}".
+Če je vnesenih več sestavin (npr. "200g cottage, 80g slanine"), vrni seznam vseh posameznih živil.
+Vrni IZKLJUČNO veljaven JSON array brez markdown oznak v naslednji obliki:
+[
+  {
+    "name": "Ime živila",
+    "amount": 200,
+    "unit": "g",
+    "kcal": 180,
+    "p": 24.0,
+    "f": 8.0,
+    "c": 3.2,
+    "fib": 0.0
+  }
+]`;
+
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
+        
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{ parts: [{ text: prompt }] }]
+          })
+        });
+
+        const data = await response.json();
+        if (data.error) throw new Error(data.error.message);
+
+        let rawReply = data.candidates[0].content.parts[0].text;
+        rawReply = rawReply.replace(/```json|```/g, '').trim();
+        const items = JSON.parse(rawReply);
+
+        items.forEach(item => addItemToLog(item));
+        document.getElementById('gemini-input').value = '';
+      } catch (err) {
+        alert("Napaka pri klicu Gemini API: " + err.message);
+      } finally {
+        hideStatus();
+      }
+    }
+
+    /* 2. GEMINI AI: SKENIRANJE SLIKE EMBALAŽE (POSODOBAN MODEL 3.6-FLASH) */
+    async function handleGeminiVision(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+
+      const apiKey = localStorage.getItem('gemini_api_key');
+      if (!apiKey) {
+        alert("Najprej vpiši Gemini API ključ v nastavitvah!");
+        document.getElementById('api-settings').classList.remove('hidden');
+        document.getElementById('gemini-key').focus();
+        return;
+      }
+
+      showStatus("📷 Gemini analizira sliko embalaže...");
+
+      try {
+        const base64Data = await fileToBase64(file);
+        const mimeType = file.type || 'image/jpeg';
+
+        const prompt = `Preberi tabelo hranilnih vrednosti s te slike za 100g živila.
+Vrni IZKLJUČNO veljaven JSON objekt brez markdown oznak:
+{
+  "name": "Ime živila s slike",
+  "kcal": 0,
+  "p": 0.0,
+  "f": 0.0,
+  "c": 0.0,
+  "fib": 0.0
+}`;
+        
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.6-flash:generateContent?key=${apiKey}`;
+
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            contents: [{
+              parts: [
+                { text: prompt },
+                {
+                  inline_data: {
+                    mime_type: mimeType,
+                    data: base64Data.split(',')[1]
+                  }
+                }
+              ]
+            }]
+          })
+        });
+
+        const data = await response.json();
+        if (data.error) throw new Error(data.error.message);
+
+        let rawReply = data.candidates[0].content.parts[0].text;
+        rawReply = rawReply.replace(/```json|```/g, '').trim();
+        const parsed = JSON.parse(rawReply);
+
+        const eaten = prompt(`Zaznano s slike na 100g (${parsed.name}):\n${parsed.kcal} kcal | B: ${parsed.p}g | M: ${parsed.f}g | OH: ${parsed.c}g\n\nKoliko gramov si pojedel?`, "100");
+        const amount = parseFloat(eaten);
+
+        if (amount && amount > 0) {
+          const ratio = amount / 100;
+          addItemToLog({
+            name: parsed.name || "Skenirano živilo",
+            amount: amount,
+            unit: 'g',
+            kcal: ratio * parsed.kcal,
+            p: ratio * parsed.p,
+            f: ratio * parsed.f,
+            c: ratio * parsed.c,
+            fib: ratio * (parsed.fib || 0)
+          });
+        }
+      } catch (err) {
+        alert("Napaka pri analizi slike: " + err.message);
+      } finally {
+        hideStatus();
+      }
+    }
+
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+      });
+    }
+
+    function addFromDb() {
+      const foodId = document.getElementById('db-select').value;
+      const amount = parseFloat(document.getElementById('db-amount').value);
+      if (!amount || amount <= 0) return;
+
+      const food = defaultFoods.find(f => f.id === foodId);
+      const ratio = amount / food.per;
+
+      addItemToLog({
+        name: food.name,
+        amount: amount,
+        unit: food.unit,
+        kcal: ratio * food.kcal,
+        p: ratio * food.p,
+        f: ratio * food.f,
+        c: ratio * food.c,
+        fib: ratio * (food.fib || 0)
+      });
+      document.getElementById('db-amount').value = '';
+    }
+
+    function addItemToLog(item) {
+      const log = getDayLog(selectedDate);
+      log.push(item);
+      saveDayLog(selectedDate, log);
+    }
+
+    function removeItem(index) {
+      const log = getDayLog(selectedDate);
+      log.splice(index, 1);
+      saveDayLog(selectedDate, log);
+    }
+
+    function saveGoals() {
+      goals = {
+        kcal: parseFloat(document.getElementById('goal-kcal').value) || 2000,
+        p: parseFloat(document.getElementById('goal-p').value) || 150,
+        f: parseFloat(document.getElementById('goal-f').value) || 70,
+        c: parseFloat(document.getElementById('goal-c').value) || 50
+      };
+      localStorage.setItem('userGoals', JSON.stringify(goals));
+      toggleElement('goals-modal');
+      render();
+    }
+
+    function saveApiKey() {
+      const key = document.getElementById('gemini-key').value.trim();
+      localStorage.setItem('gemini_api_key', key);
+      alert("Gemini ključ uspešno shranjen!");
+      document.getElementById('api-settings').classList.add('hidden');
+    }
+
+    function render() {
+      const log = getDayLog(selectedDate);
+      const list = document.getElementById('meal-list');
+      list.innerHTML = log.length === 0 ? '<p style="color:var(--muted); text-align:center; font-size:0.85rem;">Ni vnosov za ta dan</p>' : '';
+
+      let totKcal = 0, totP = 0, totF = 0, totC = 0, totFib = 0;
+
+      log.forEach((item, index) => {
+        totKcal += item.kcal;
+        totP += item.p;
+        totF += item.f;
+        totC += item.c;
+        totFib += (item.fib || 0);
+
+        const netC = Math.max(0, item.c - (item.fib || 0));
+
+        list.innerHTML += `
+          <div class="meal-item">
+            <div>
+              <div class="item-name">${item.name} (${item.amount} ${item.unit})</div>
+              <div class="item-sub">${item.kcal.toFixed(0)} kcal | B: ${item.p.toFixed(1)}g | M: ${item.f.toFixed(1)}g | Neto OH: ${netC.toFixed(1)}g</div>
+            </div>
+            <button class="btn-del" onclick="removeItem(${index})">×</button>
+          </div>
+        `;
+      });
+
+      const netTotalC = Math.max(0, totC - totFib);
+
+      document.getElementById('txt-kcal').textContent = `${totKcal.toFixed(0)} / ${goals.kcal}`;
+      document.getElementById('txt-p').textContent = `${totP.toFixed(1)} / ${goals.p}g`;
+      document.getElementById('txt-f').textContent = `${totF.toFixed(1)} / ${goals.f}g`;
+      document.getElementById('txt-c').textContent = `${netTotalC.toFixed(1)}g / ${goals.c}g`;
+
+      document.getElementById('bar-kcal').style.width = `${Math.min(100, (totKcal / goals.kcal) * 100)}%`;
+      document.getElementById('bar-p').style.width = `${Math.min(100, (totP / goals.p) * 100)}%`;
+      document.getElementById('bar-f').style.width = `${Math.min(100, (totF / goals.f) * 100)}%`;
+      document.getElementById('bar-c').style.width = `${Math.min(100, (netTotalC / goals.c) * 100)}%`;
+    }
+
+    function showStatus(msg) {
+      const el = document.getElementById('scan-status');
+      el.textContent = msg;
+      el.classList.remove('hidden');
+    }
+
+    function hideStatus() {
+      document.getElementById('scan-status').classList.add('hidden');
+    }
+
+    function switchTab(tab) {
+      document.getElementById('tab-gemini').classList.toggle('hidden', tab !== 'gemini');
+      document.getElementById('tab-scan').classList.toggle('hidden', tab !== 'scan');
+      document.getElementById('tab-db').classList.toggle('hidden', tab !== 'db');
+
+      document.getElementById('tab-gemini-btn').classList.toggle('active', tab === 'gemini');
+      document.getElementById('tab-scan-btn').classList.toggle('active', tab === 'scan');
+      document.getElementById('tab-db-btn').classList.toggle('active', tab === 'db');
+    }
+
+    function toggleElement(id) {
+      document.getElementById(id).classList.toggle('hidden');
+    }
+
+    init();
+  </script>
+</body>
+</html>
